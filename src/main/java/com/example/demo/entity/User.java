@@ -1,4 +1,4 @@
-package com.example.demo.eninty;
+package com.example.demo.entity;
 import jakarta.persistence.*;   //veritabanı işlemleri(JPA) için gerekli kütüphane
 import lombok.*;  //Getter setter için gerekli kütüphane
 

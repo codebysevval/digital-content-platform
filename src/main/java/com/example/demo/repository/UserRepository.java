@@ -1,5 +1,5 @@
 package com.example.demo.repository;
-import com.example.demo.eninty.User;
+import com.example.demo.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository; //Hazır metotlar için
 import org.springframework.stereotype.Repository;//Spring'e bu sınıfın görevini bildirir
 import java.util.Optional;

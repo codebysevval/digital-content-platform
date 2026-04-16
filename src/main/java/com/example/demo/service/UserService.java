@@ -1,5 +1,5 @@
 package com.example.demo.service;
-import com.example.demo.eninty.User;
+import com.example.demo.entity.User;
 import com.example.demo.repository.UserRepository;
 import lombok.RequiredArgsConstructor; //Final olan değişkenleri otomatik enjekte eder
 import org.springframework.stereotype.Service;//Spring'e bu sınıfın bir servis olduğunu belirtir
