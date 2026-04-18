@@ -1,5 +1,5 @@
 **Dijital İçerik Platformu - Kurulum & Çalıştırma Rehberi**
-Merhaba ekip! Projemizin son halini (Veritabanı bağlantısı yapılmış ve stabil sürüm) GitHub'a yükledim. Kendi yerelinizde sorunsuz çalıştırmak için lütfen aşağıdaki adımları sırayla takip edin:
+Projemizin son halini (Veritabanı bağlantısı yapılmış ve stabil sürüm) GitHub'a yükledim. Kendi yerelinizde sorunsuz çalıştırmak için lütfen aşağıdaki adımları sırayla takip edin:
 
 1️⃣ Projeyi Bilgisayarınıza İndirin (Clone)
 Eğer projeyi daha önce indirdiyseniz, terminale git pull yazarak güncel dosyaları çekin. İlk kez indirecekseniz:
