@@ -1,4 +1,5 @@
 **🚀 Dijital İçerik Platformu - Kurulum Rehberi**
+
 Merhaba arkadaşlar! Bu proje bizim ortak çalışma alanımız. Projeyi kendi bilgisayarınızda sorunsuz çalıştırmak için aşağıdaki adımları takip etmeniz yeterli.
 
 1️⃣ Adım: Bilgisayara İndirme (Clone/Pull)
@@ -32,6 +33,7 @@ Terminalden: Terminale şu komutu yazıp Enter'a basın:
 ./mvnw spring-boot:run
 
 **⚠️ Dikkat Etmemiz Gerekenler (Git Kuralları)**
+
 Çalışmaya Başlamadan Önce: Mutlaka git pull yapın (başkası bir şey eklediyse size de gelsin).
 
 İşiniz Bitince: Kodunuzu kaydedip GitHub'a göndermeyi unutmayın (git add . -> git commit -> git push).
