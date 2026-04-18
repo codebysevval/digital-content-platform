@@ -1,39 +1,40 @@
-**🚀 Dijital İçerik Abonelik Sistemi**
+**🚀 Dijital İçerik Platformu - Kurulum Rehberi**
+Merhaba arkadaşlar! Bu proje bizim ortak çalışma alanımız. Projeyi kendi bilgisayarınızda sorunsuz çalıştırmak için aşağıdaki adımları takip etmeniz yeterli.
 
-Bu proje, Spring Boot ve PostgreSQL kullanılarak geliştirilmiş bir backend sistemidir.
+1️⃣ Adım: Bilgisayara İndirme (Clone/Pull)
+Önce projenin bir kopyasını kendi bilgisayarınıza almalısınız.
 
-**🛠️ Kurulum ve Çalıştırma**
+Eğer ilk kez indirecekseniz: git clone https://github.com/codebysevval/digital-content-platform.git
 
-Projeyi çalıştırmadan önce bilgisayarınızda PostgreSQL kurulu olduğundan emin olun.
+Daha önce indirdiyseniz: git pull origin main yaparak son güncellemeleri çekin.
 
-1. Ön Hazırlık (PostgreSQL Yoksa)
-Eğer yüklü değilse, PostgreSQL resmi sayfasından işletim sisteminize uygun sürümü indirin ve kurun.
+2️⃣ Adım: PostgreSQL Hazırlığı
+Kodun çalışması için bilgisayarınızda PostgreSQL kurulu olmalıdır.
 
-Kurulum sırasında belirlediğiniz şifreyi bir kenara not edin.
+Eğer yüklü değilse: PostgreSQL resmi sayfasından indirip kurun ve kurulumda belirlediğiniz şifreyi not edin.
 
-2. Veritabanı Şeması
-Veritabanı arayüzünüzü (pgAdmin vb.) açın.
+Veritabanı Şeması: Herhangi bir veritabanı arayüzünü (pgAdmin vb.) açın. Proje içindeki database_schema.sql dosyasındaki kodları kopyalayıp, varsayılan olarak gelen postgres isimli veritabanında çalıştırın. Tablolar otomatik oluşacaktır.
 
-Proje içinde bulunan database_schema.sql dosyasındaki SQL kodlarını kopyalayıp, varsayılan olarak gelen postgres isimli veritabanında çalıştırın. Bu işlem gerekli tabloları otomatik oluşturacaktır.
+3️⃣ Adım: Ayarları Kendinize Göre Düzenleme
+Herkesin bilgisayar şifresi farklı olduğu için koda kendi şifrenizi tanıtmalısınız.
 
-3. Şifre Güncelleme (Önemli!)
-src/main/resources/application.properties dosyasını açın.
+src/main/resources/application.properties dosyasını bulun ve açın.
 
-spring.datasource.password satırına kendi PostgreSQL şifrenizi yazın:
+Şu satırı kendi PostgreSQL şifrenizle değiştirin:
+spring.datasource.password=BURAYA_KENDI_SIFRENIZI_YAZIN
 
-Properties
-spring.datasource.password=KENDI_SIFRENIZ
-4. Projeyi Başlatma (IntelliJ Community)
-Ücretsiz sürümde Spring Boot butonu çalışmayabileceği için:
+4️⃣ Adım: Projeyi Çalıştırma
+IntelliJ Community (ücretsiz) sürümünde üstteki yeşil buton çalışmayabilir. Bu durumda:
 
-IDE İçinden: Application.java dosyasındaki main metodunun solundaki yeşil oynat simgesine tıklayın.
+IDE İçinden: src/main/java altındaki ana uygulama dosyasını (Application.java) bulun ve main metodunun solundaki küçük Yeşil Oynat simgesine tıklayın.
 
-Terminalden: Proje ana dizinindeyken şu komutu çalıştırın:
-
-Bash
+Terminalden: Terminale şu komutu yazıp Enter'a basın:
 ./mvnw spring-boot:run
 
-**👥 Ekip Notları**
-Başlamadan Önce: git pull origin main yaparak son kodları çekmeyi unutmayın.
+**⚠️ Dikkat Etmemiz Gerekenler (Git Kuralları)**
+Çalışmaya Başlamadan Önce: Mutlaka git pull yapın (başkası bir şey eklediyse size de gelsin).
 
+İşiniz Bitince: Kodunuzu kaydedip GitHub'a göndermeyi unutmayın (git add . -> git commit -> git push).
+
+Hata Alırsanız: Gruptan ekran görüntüsü atın, beraber çözelim! 🧑‍💻✨
 Geliştirme Sonrası: Kodlarınızı git push ile göndermeden önce projenin hatasız çalıştığından emin olun.
