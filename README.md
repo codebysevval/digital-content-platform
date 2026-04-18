@@ -14,7 +14,7 @@ Kodun çalışması için bilgisayarınızda PostgreSQL kurulu olmalıdır.
 
 Eğer yüklü değilse: PostgreSQL resmi sayfasından indirip kurun ve kurulumda belirlediğiniz şifreyi not edin.
 
-Veritabanı Şeması: Herhangi bir veritabanı arayüzünü (pgAdmin vb.) açın. Proje içindeki database_schema.sql dosyasındaki kodları kopyalayıp, varsayılan olarak gelen postgres isimli veritabanında çalıştırın. Tablolar otomatik oluşacaktır.
+Veritabanı Şeması: Herhangi bir veritabanı arayüzünü (pgAdmin vb.) açın. PostgreSQL kurulduğunda otomatik olarak gelen postgres isimli veritabanına girin. Proje içindeki database_schema.sql dosyasındaki kodları kopyalayıp bu veritabanında çalıştırın. Tablolar otomatik oluşacaktır. (Yeni bir veritabanı oluşturmanıza gerek yoktur, varsayılan olanı kullanıyoruz.)
 
 3️⃣ Adım: Ayarları Kendinize Göre Düzenleme
 Herkesin bilgisayar şifresi farklı olduğu için koda kendi şifrenizi tanıtmalısınız.
