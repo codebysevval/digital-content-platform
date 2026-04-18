@@ -16,6 +16,7 @@ spring.datasource.password kısmına kendi PostgreSQL şifrenizi yazın:
 
 Properties
 spring.datasource.password=KENDI_SIFRENIZ
+
 3. Projeyi Çalıştırma (IntelliJ Community Sürümü)
 Ücretsiz sürümde Spring Boot "Run" butonu aktif olmayabilir. Bu durumda şu yöntemleri kullanabilirsiniz:
 
@@ -26,7 +27,9 @@ IntelliJ terminalini açın ve projenin ana dizinindeyken şu komutu çalıştı
 
 Bash
 ./mvnw spring-boot:run
+
 **👥 Ekip Kuralları ve Git Kullanımı**
+
 Güncel Kalın: Her çalışmaya başlamadan önce mutlaka git pull origin main yaparak son kodları çekin.
 
 Paylaşım: Yeni bir özellik eklediğinizde veya hata çözdüğünüzde;
