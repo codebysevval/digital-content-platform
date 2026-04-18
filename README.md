@@ -1,7 +1,8 @@
 **🚀 Dijital İçerik Abonelik Sistemi**
 Bu proje, Spring Boot ve PostgreSQL kullanılarak geliştirilen, kullanıcıların dijital içerik aboneliklerini yönetebileceği bir backend sistemidir.
 
-🛠️ Kurulum ve Çalıştırma
+**🛠️ Kurulum ve Çalıştırma**
+
 Projeyi yerel bilgisayarınızda ayağa kaldırmak için aşağıdaki adımları takip ediniz.
 
 1. Veritabanı Yapılandırması (PostgreSQL)
