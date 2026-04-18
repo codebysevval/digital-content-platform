@@ -1,43 +1,39 @@
 **🚀 Dijital İçerik Abonelik Sistemi**
-Bu proje, Spring Boot ve PostgreSQL kullanılarak geliştirilen, kullanıcıların dijital içerik aboneliklerini yönetebileceği bir backend sistemidir.
+
+Bu proje, Spring Boot ve PostgreSQL kullanılarak geliştirilmiş bir backend sistemidir.
 
 **🛠️ Kurulum ve Çalıştırma**
 
-Projeyi yerel bilgisayarınızda ayağa kaldırmak için aşağıdaki adımları takip ediniz.
+Projeyi çalıştırmadan önce bilgisayarınızda PostgreSQL kurulu olduğundan emin olun.
 
-1. Veritabanı Yapılandırması (PostgreSQL)
-pgAdmin 4 üzerinden Abonelik_Sistemi adında yeni bir veritabanı oluşturun.
+1. Ön Hazırlık (PostgreSQL Yoksa)
+Eğer yüklü değilse, PostgreSQL resmi sayfasından işletim sisteminize uygun sürümü indirin ve kurun.
 
-src/main/resources/database_schema.sql dosyasındaki SQL komutlarını kopyalayın ve oluşturduğunuz veritabanının Query Tool kısmında çalıştırarak tabloları oluşturun.
+Kurulum sırasında belirlediğiniz şifreyi bir kenara not edin.
 
-2. Uygulama Ayarları
+2. Veritabanı Şeması
+Veritabanı arayüzünüzü (pgAdmin vb.) açın.
+
+Proje içinde bulunan database_schema.sql dosyasındaki SQL kodlarını kopyalayıp, varsayılan olarak gelen postgres isimli veritabanında çalıştırın. Bu işlem gerekli tabloları otomatik oluşturacaktır.
+
+3. Şifre Güncelleme (Önemli!)
 src/main/resources/application.properties dosyasını açın.
 
-spring.datasource.password kısmına kendi PostgreSQL şifrenizi yazın:
+spring.datasource.password satırına kendi PostgreSQL şifrenizi yazın:
 
 Properties
 spring.datasource.password=KENDI_SIFRENIZ
+4. Projeyi Başlatma (IntelliJ Community)
+Ücretsiz sürümde Spring Boot butonu çalışmayabileceği için:
 
-3. Projeyi Çalıştırma (IntelliJ Community Sürümü)
-Ücretsiz sürümde Spring Boot "Run" butonu aktif olmayabilir. Bu durumda şu yöntemleri kullanabilirsiniz:
+IDE İçinden: Application.java dosyasındaki main metodunun solundaki yeşil oynat simgesine tıklayın.
 
-Yöntem A (IDE İçinden): src/main/java klasörü altındaki ana uygulama dosyasını (örneğin DemoApplication.java) bulun. Dosya içindeki main metodunun solundaki küçük yeşil oynat simgesine tıklayarak Run seçeneğini seçin.
-
-Yöntem B (Terminalden - En Garanti Yol):
-IntelliJ terminalini açın ve projenin ana dizinindeyken şu komutu çalıştırın:
+Terminalden: Proje ana dizinindeyken şu komutu çalıştırın:
 
 Bash
 ./mvnw spring-boot:run
 
-**👥 Ekip Kuralları ve Git Kullanımı**
+**👥 Ekip Notları**
+Başlamadan Önce: git pull origin main yaparak son kodları çekmeyi unutmayın.
 
-Güncel Kalın: Her çalışmaya başlamadan önce mutlaka git pull origin main yaparak son kodları çekin.
-
-Paylaşım: Yeni bir özellik eklediğinizde veya hata çözdüğünüzde;
-
-git add .
-
-git commit -m "Yaptığınız işlemin kısa açıklaması"
-
-git push origin main
-komutlarını sırasıyla kullanarak güncellemeleri paylaşın.
+Geliştirme Sonrası: Kodlarınızı git push ile göndermeden önce projenin hatasız çalıştığından emin olun.
