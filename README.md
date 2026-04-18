@@ -1,4 +1,5 @@
 **Dijital İçerik Platformu - Kurulum & Çalıştırma Rehberi**
+
 Projemizin son halini (Veritabanı bağlantısı yapılmış ve stabil sürüm) GitHub'a yükledim. Kendi yerelinizde sorunsuz çalıştırmak için lütfen aşağıdaki adımları sırayla takip edin:
 
 1️⃣ Projeyi Bilgisayarınıza İndirin (Clone)
@@ -35,6 +36,7 @@ IntelliJ içinde src/main/resources/application.properties dosyasını açın.
 Properties
 spring.datasource.username=postgres
 spring.datasource.password=BURAYA_KENDI_POSTGRES_SIFRENIZI_YAZIN
+
 5️⃣ Projeyi Çalıştırın
 IDE'nizin üstündeki Yeşil Oynat (Run) butonuna basın.
 
