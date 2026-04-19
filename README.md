@@ -46,4 +46,5 @@ Kendi kodunuzu göndermeden önce mutlaka tekrar bir pull yapın:
 
 git pull origin main
 git push origin main
-**Not:** Eğer git pull yaptığınızda bir çakışma (conflict) uyarısı alırsanız, IntelliJ içindeki "Merge" ekranından hangi kodun kalacağını seçin veya benimle iletişime geçin
+
+**Not:**Eğer git pull yaptığınızda bir çakışma (conflict) uyarısı alırsanız, IntelliJ içindeki "Merge" ekranından hangi kodun kalacağını seçin veya benimle iletişime geçin
