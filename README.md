@@ -1,42 +1,49 @@
-**🚀 Dijital İçerik Platformu - Kurulum Rehberi**
+**Abonelik Yönetim Sistemi (Digital Content Platform)**
 
-Merhaba arkadaşlar! Bu proje bizim ortak çalışma alanımız. Projeyi kendi bilgisayarınızda sorunsuz çalıştırmak için aşağıdaki adımları takip etmeniz yeterli.
+Bu proje, Spring Boot ve PostgreSQL kullanılarak geliştirilen bir abonelik yönetim sistemidir. Ekip olarak uyumlu çalışabilmemiz için lütfen aşağıdaki adımları takip edin.
 
-1️⃣ Adım: Bilgisayara İndirme (Clone/Pull)
-Önce projenin bir kopyasını kendi bilgisayarınıza almalısınız.
+**🛠️ Kurulum ve Başlatma**
 
-Eğer ilk kez indirecekseniz: git clone https://github.com/codebysevval/digital-content-platform.git
+Projeyi bilgisayarınıza ilk kez çekecekseniz veya güncelleyecekseniz:
 
-Daha önce indirdiyseniz: git pull origin main yaparak son güncellemeleri çekin.
+Projeyi Klonlayın:
 
-2️⃣ Adım: PostgreSQL Hazırlığı
-Kodun çalışması için bilgisayarınızda PostgreSQL kurulu olmalıdır.
+git clone https://github.com/codebysevval/digital-content-platform.git
 
-Eğer yüklü değilse: PostgreSQL resmi sayfasından indirip kurun ve kurulumda belirlediğiniz şifreyi not edin.
+Bağımlılıkları Yükleyin:
 
-Veritabanı Şeması: Herhangi bir veritabanı arayüzünü (pgAdmin vb.) açın. PostgreSQL kurulduğunda otomatik olarak gelen postgres isimli veritabanına girin. Proje içindeki database_schema.sql dosyasındaki kodları kopyalayıp bu veritabanında çalıştırın. Tablolar otomatik oluşacaktır. (Yeni bir veritabanı oluşturmanıza gerek yoktur, varsayılan olanı kullanıyoruz.)
+IntelliJ IDEA'da projeyi açtığınızda sağ altta çıkan bildirimden "Load Maven Project" deyin.
 
-3️⃣ Adım: Ayarları Kendinize Göre Düzenleme
-Herkesin bilgisayar şifresi farklı olduğu için koda kendi şifrenizi tanıtmalısınız.
+Eğer bağımlılıklar inmezse, sağdaki Maven sekmesine tıklayıp "Reload All Maven Projects" (döngü ikonu) butonuna basın.
 
-src/main/resources/application.properties dosyasını bulun ve açın.
+Veritabanı Ayarları:
 
-Şu satırı kendi PostgreSQL şifrenizle değiştirin:
-spring.datasource.password=BURAYA_KENDI_SIFRENIZI_YAZIN
+src/main/resources/application.properties dosyasını açın.
 
-4️⃣ Adım: Projeyi Çalıştırma
-IntelliJ Community (ücretsiz) sürümünde üstteki yeşil buton çalışmayabilir. Bu durumda:
+spring.datasource.username ve password kısımlarını kendi yerel PostgreSQL bilgilerinizle güncelleyin.
 
-IDE İçinden: src/main/java altındaki ana uygulama dosyasını (Application.java) bulun ve main metodunun solundaki küçük Yeşil Oynat simgesine tıklayın.
+Uygulamayı Çalıştırın:
 
-Terminalden: Terminale şu komutu yazıp Enter'a basın:
-./mvnw spring-boot:run
+com.example.demo paketi altındaki DemoApplication.java dosyasını bulun ve yeşil Play butonuna basın.
 
-**⚠️ Dikkat Etmemiz Gerekenler (Git Kuralları)**
+🔄 GitHub Çalışma Akışı (Önemli!)
+Kod yazmaya başlamadan ve bitirdikten sonra çakışma (conflict) yaşamamak için şu sırayı izleyelim:
 
-Çalışmaya Başlamadan Önce: Mutlaka git pull yapın (başkası bir şey eklediyse size de gelsin).
+1. Çalışmaya Başlamadan Önce (Pull)
+Başkası bir kod yüklediyse onu kendi bilgisayarınıza çekmek için:
 
-İşiniz Bitince: Kodunuzu kaydedip GitHub'a göndermeyi unutmayın (git add . -> git commit -> git push).
+git pull origin main
 
-Hata Alırsanız: Gruptan ekran görüntüsü atın, beraber çözelim! 🧑‍💻✨
-Geliştirme Sonrası: Kodlarınızı git push ile göndermeden önce projenin hatasız çalıştığından emin olun.
+2. Değişiklikleri Kaydetme (Commit)
+Kodunuzu yazdınız ve her şeyin çalıştığından eminsiniz:
+
+
+git add .
+git commit -m "Ne yaptığınızı kısaca buraya yazın (Örn: User Service eklendi)"
+
+3. Kodları Gönderme (Push)
+Kendi kodunuzu göndermeden önce mutlaka tekrar bir pull yapın:
+
+git pull origin main
+git push origin main
+**Not:** Eğer git pull yaptığınızda bir çakışma (conflict) uyarısı alırsanız, IntelliJ içindeki "Merge" ekranından hangi kodun kalacağını seçin veya benimle iletişime geçin
