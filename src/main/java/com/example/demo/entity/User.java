@@ -16,10 +16,9 @@ public class User {
     @Column(unique=true,nullable=false) //özel ve boş bırakılamaz
     private String username;
 
-    @Column(nullable=false)
+    @Column(name = "password_hash", nullable=false)
     private String password;
 
     @Column(nullable=false)
-    private String role;
-
+    private String status;
 }
