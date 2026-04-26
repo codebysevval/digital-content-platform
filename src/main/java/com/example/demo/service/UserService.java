@@ -1,25 +1,37 @@
 package com.example.demo.service;
+
+import com.example.demo.dto.UserDTO;
 import com.example.demo.entity.User;
+import com.example.demo.exception.ResourceNotFoundException;
+import com.example.demo.mapper.DtoMapper;
 import com.example.demo.repository.UserRepository;
-import lombok.RequiredArgsConstructor; //Final olan değişkenleri otomatik enjekte eder
-import org.springframework.stereotype.Service;//Spring'e bu sınıfın bir servis olduğunu belirtir
+import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-public class UserService {
-    private final UserRepository userRepository; //userRepository tanımladık
+public class UserService implements UserDetailsService {
+    private final UserRepository userRepository;
+    private final DtoMapper mapper;
 
-    public List<User> getAllUsers(){
-        return userRepository.findAll(); //Aranan kullanıcıyı bulur ve geri döner
-    }
-    public User saveUser(User user){
-        return userRepository.save(user);
+    @Override
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        return userRepository.findByUsername(username)
+                .orElseThrow(() -> new UsernameNotFoundException("Kullanıcı adı bulunamadı: " + username));
     }
 
-    public User findByUsername(String username){
-        return  userRepository.findByUsername(username)
-                .orElseThrow(()->new RuntimeException("Kullanıcı bulunamadı:"+username));
+    public List<UserDTO> getAllUsers() {
+        return userRepository.findAll().stream().map(mapper::toUserDto).toList();
+    }
+
+    public UserDTO getUserById(Long id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("User bulunamadı. id=" + id));
+        return mapper.toUserDto(user);
     }
 }
