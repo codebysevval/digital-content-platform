@@ -4,65 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="15a41a1e-05fa-421c-b7fc-62180d464345" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.gitattributes" beforeDir="false" afterPath="$PROJECT_DIR$/backend/.gitattributes" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/backend/.gitignore" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.mvn/wrapper/maven-wrapper.properties" beforeDir="false" afterPath="$PROJECT_DIR$/backend/.mvn/wrapper/maven-wrapper.properties" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/backend/README.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/flutter_bridge/lib/models/auth_response_model.dart" beforeDir="false" afterPath="$PROJECT_DIR$/backend/flutter_bridge/lib/models/auth_response_model.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/flutter_bridge/lib/models/content_model.dart" beforeDir="false" afterPath="$PROJECT_DIR$/backend/flutter_bridge/lib/models/content_model.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/flutter_bridge/lib/models/dashboard_stats_model.dart" beforeDir="false" afterPath="$PROJECT_DIR$/backend/flutter_bridge/lib/models/dashboard_stats_model.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/flutter_bridge/lib/models/login_request_model.dart" beforeDir="false" afterPath="$PROJECT_DIR$/backend/flutter_bridge/lib/models/login_request_model.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/flutter_bridge/lib/models/register_request_model.dart" beforeDir="false" afterPath="$PROJECT_DIR$/backend/flutter_bridge/lib/models/register_request_model.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/flutter_bridge/lib/models/subscription_model.dart" beforeDir="false" afterPath="$PROJECT_DIR$/backend/flutter_bridge/lib/models/subscription_model.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/flutter_bridge/lib/models/user_dashboard_model.dart" beforeDir="false" afterPath="$PROJECT_DIR$/backend/flutter_bridge/lib/models/user_dashboard_model.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/flutter_bridge/lib/models/user_session_model.dart" beforeDir="false" afterPath="$PROJECT_DIR$/backend/flutter_bridge/lib/models/user_session_model.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/flutter_bridge/lib/services/api_service.dart" beforeDir="false" afterPath="$PROJECT_DIR$/backend/flutter_bridge/lib/services/api_service.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mvnw" beforeDir="false" afterPath="$PROJECT_DIR$/backend/mvnw" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mvnw.cmd" beforeDir="false" afterPath="$PROJECT_DIR$/backend/mvnw.cmd" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/backend/pom.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/demo/DemoApplication.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/example/demo/DemoApplication.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/demo/config/ApplicationConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/example/demo/config/ApplicationConfig.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/demo/config/JwtAuthenticationFilter.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/example/demo/config/JwtAuthenticationFilter.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/demo/config/SecurityConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/example/demo/config/SecurityConfig.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/demo/controller/AuthenticationController.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/example/demo/controller/AuthenticationController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/demo/controller/ContentController.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/example/demo/controller/ContentController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/demo/controller/DashboardController.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/example/demo/controller/DashboardController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/demo/controller/SubscriptionController.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/example/demo/controller/SubscriptionController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/demo/controller/UserController.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/example/demo/controller/UserController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/demo/dto/AuthResponse.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/example/demo/dto/AuthResponse.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/demo/dto/ContentDTO.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/example/demo/dto/ContentDTO.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/demo/dto/ContentUpsertRequest.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/example/demo/dto/ContentUpsertRequest.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/demo/dto/DashboardStatsDTO.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/example/demo/dto/DashboardStatsDTO.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/demo/dto/LoginRequest.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/example/demo/dto/LoginRequest.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/demo/dto/RegisterRequest.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/example/demo/dto/RegisterRequest.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/demo/dto/SubscriptionDTO.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/example/demo/dto/SubscriptionDTO.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/demo/dto/UserDTO.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/example/demo/dto/UserDTO.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/demo/dto/UserDashboardDTO.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/example/demo/dto/UserDashboardDTO.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/demo/dto/UserSessionDTO.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/example/demo/dto/UserSessionDTO.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/demo/entity/Content.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/example/demo/entity/Content.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/demo/entity/Subscription.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/example/demo/entity/Subscription.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/demo/entity/User.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/example/demo/entity/User.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/demo/exception/ErrorResponse.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/example/demo/exception/ErrorResponse.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/demo/exception/GlobalExceptionHandler.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/example/demo/exception/GlobalExceptionHandler.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/demo/exception/ResourceNotFoundException.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/example/demo/exception/ResourceNotFoundException.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/demo/exception/SubscriptionExpiredException.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/example/demo/exception/SubscriptionExpiredException.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/demo/mapper/DtoMapper.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/example/demo/mapper/DtoMapper.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/demo/repository/ContentRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/example/demo/repository/ContentRepository.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/demo/repository/SubscriptionRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/example/demo/repository/SubscriptionRepository.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/demo/repository/UserRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/example/demo/repository/UserRepository.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/demo/service/ContentService.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/example/demo/service/ContentService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/demo/service/DashboardService.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/example/demo/service/DashboardService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/demo/service/JwtService.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/example/demo/service/JwtService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/demo/service/SubscriptionService.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/example/demo/service/SubscriptionService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/demo/service/UserService.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/example/demo/service/UserService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/resources/application-postgres.properties" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/resources/application-postgres.properties" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/resources/application.properties" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/resources/application.properties" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/resources/data.sql" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/resources/data.sql" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/resources/database_schema.sql" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/resources/database_schema.sql" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/resources/schema.sql" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/resources/schema.sql" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/test/java/com/example/demo/DemoApplicationTests.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/test/java/com/example/demo/DemoApplicationTests.java" afterDir="false" />
-    </list>
+    <list default="true" id="15a41a1e-05fa-421c-b7fc-62180d464345" name="Changes" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -123,6 +65,7 @@
       <recent name="C:\Users\oking\OneDrive\Desktop\Abonelik_Sistemi\src\main\resources" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\oking\OneDrive\Desktop\Abonelik_Sistemi\frontend" />
       <recent name="C:\Users\oking\OneDrive\Desktop\Abonelik_Sistemi\backend" />
       <recent name="C:\Users\oking\OneDrive\Desktop\Abonelik_Sistemi\.mvn" />
     </key>
