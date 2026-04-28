@@ -10,13 +10,13 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 public class RegisterRequest {
-    @NotBlank
+    @NotBlank(message = "Kullanıcı adı zorunludur.")
     private String username;
-    @NotBlank
+    @NotBlank(message = "Şifre zorunludur.")
     private String password;
-    @Email
-    @NotBlank
+    @Email(message = "Geçerli bir e-posta giriniz.")
+    @NotBlank(message = "E-posta zorunludur.")
     private String email;
-    @NotBlank
+    @NotBlank(message = "Ad soyad zorunludur.")
     private String fullName;
 }

@@ -9,6 +9,8 @@ public record ContentDTO(
         Long id,
         String title,
         String category,
+        String thumbnailUrl,
+        Integer durationMinutes,
         boolean premium,
         List<Long> userIds
 ) {

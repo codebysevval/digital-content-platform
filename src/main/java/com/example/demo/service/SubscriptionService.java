@@ -19,14 +19,19 @@ public class SubscriptionService {
     private final SubscriptionRepository subscriptionRepository;
     private final DtoMapper mapper;
 
+    /**
+     * Figma dashboard abonelik listesi için tüm abonelik DTO'larını döner.
+     */
     public List<SubscriptionDTO> getAllSubscriptions() {
         return subscriptionRepository.findAll().stream().map(mapper::toSubscriptionDto).toList();
     }
 
+    /**
+     * Figma abonelik detay ekranı için tek aboneliği getirir ve aktiflik kontrolü yapar.
+     */
     public SubscriptionDTO getSubscription(Long id) {
         Subscription subscription = subscriptionRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Subscription bulunamadı. id=" + id));
-        // TODO: Ödeme entegrasyonu (Payment Gateway) tamamlandığında abonelik doğrulaması ödeme durumuna bağlanacak.
         if (subscription.getEndDate().isBefore(LocalDate.now())) {
             throw new SubscriptionExpiredException("Abonelik süresi dolmuş. id=" + id);
         }

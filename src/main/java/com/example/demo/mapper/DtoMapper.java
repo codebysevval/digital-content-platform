@@ -29,6 +29,9 @@ public class DtoMapper {
         return SubscriptionDTO.builder()
                 .id(subscription.getId())
                 .planName(subscription.getPlanName())
+                .price(subscription.getPrice())
+                .currency(subscription.getCurrency())
+                .billingCycle(subscription.getBillingCycle())
                 .startDate(subscription.getStartDate())
                 .endDate(subscription.getEndDate())
                 .active(subscription.isActive())
@@ -41,6 +44,8 @@ public class DtoMapper {
                 .id(content.getId())
                 .title(content.getTitle())
                 .category(content.getCategory())
+                .thumbnailUrl(content.getThumbnailUrl())
+                .durationMinutes(content.getDurationMinutes())
                 .premium(content.isPremium())
                 .userIds(content.getUsers().stream().map(User::getId).collect(Collectors.toList()))
                 .build();

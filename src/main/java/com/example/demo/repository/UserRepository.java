@@ -7,4 +7,6 @@ import java.util.Optional;
 @Repository   //Bu interface veritabanı işlemlerinden sorumlu
 public interface UserRepository extends JpaRepository<User, Long> { //User tablosu ile çalışacağım ve ID tipi Long
     Optional<User> findByUsername(String username);  //Kullanıcı bulunabilir de bulunmayabilir de
+    boolean existsByUsername(String username);
+    boolean existsByEmail(String email);
 }

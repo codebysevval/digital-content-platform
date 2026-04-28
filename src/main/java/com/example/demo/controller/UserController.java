@@ -17,11 +17,17 @@ public class UserController {
 
     private final UserService userService;
 
+    /**
+     * Figma kullanıcı yönetimi/listesi alanında gösterilecek tüm kullanıcı özetlerini döner.
+     */
     @GetMapping
     public List<UserDTO> getAllUsers() {
         return userService.getAllUsers();
     }
 
+    /**
+     * Figma profil detay bölümünde seçilen kullanıcıyı getirir.
+     */
     @GetMapping("/{id}")
     public UserDTO getUser(@PathVariable Long id) {
         return userService.getUserById(id);

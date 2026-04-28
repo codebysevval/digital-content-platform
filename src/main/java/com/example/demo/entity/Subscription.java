@@ -24,6 +24,15 @@ public class Subscription {
     private String planName;
 
     @Column(nullable = false)
+    private double price;
+
+    @Column(nullable = false)
+    private String currency;
+
+    @Column(nullable = false)
+    private String billingCycle;
+
+    @Column(nullable = false)
     private LocalDate startDate;
 
     @Column(nullable = false)

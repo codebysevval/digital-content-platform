@@ -2,6 +2,7 @@ package com.example.demo.controller;
 import com.example.demo.dto.AuthResponse;
 import com.example.demo.dto.LoginRequest;
 import com.example.demo.dto.RegisterRequest;
+import com.example.demo.dto.UserSessionDTO;
 import com.example.demo.entity.User;
 import com.example.demo.repository.UserRepository;
 import com.example.demo.service.JwtService;
@@ -34,22 +35,45 @@ public class AuthenticationController {
     }
 
     @PostMapping("/register")
+    /**
+     * Figma Register ekranındaki form verisini alır, kullanıcıyı ROLE_USER ile kaydeder ve JWT döner.
+     */
     public AuthResponse register(@Valid @RequestBody RegisterRequest request) {
+        if (userRepository.existsByUsername(request.getUsername())) {
+            throw new IllegalArgumentException("Bu kullanıcı adı zaten kullanılıyor.");
+        }
+        if (userRepository.existsByEmail(request.getEmail())) {
+            throw new IllegalArgumentException("Bu e-posta zaten kullanılıyor.");
+        }
+
         User user = new User();
         user.setUsername(request.getUsername());
         user.setPassword(passwordEncoder.encode(request.getPassword()));
         user.setEmail(request.getEmail());
         user.setFullName(request.getFullName());
-        user.setRole("SUBSCRIBER");
+        user.setRole("USER");
         userRepository.save(user);
-        return new AuthResponse(jwtService.generateToken(user.getUsername()));
+        return createAuthResponse(user);
     }
 
     @PostMapping("/login")
+    /**
+     * Figma Login ekranındaki kimlik doğrulama akışını tamamlar ve JWT + kullanıcı özeti döner.
+     */
     public AuthResponse login(@Valid @RequestBody LoginRequest request) {
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword())
         );
-        return new AuthResponse(jwtService.generateToken(request.getUsername()));
+        User user = userRepository.findByUsername(request.getUsername())
+                .orElseThrow(() -> new IllegalArgumentException("Kullanıcı bulunamadı."));
+        return createAuthResponse(user);
+    }
+
+    private AuthResponse createAuthResponse(User user) {
+        return new AuthResponse(
+                jwtService.generateToken(user.getUsername()),
+                "Bearer",
+                new UserSessionDTO(user.getId(), user.getUsername(), user.getEmail(), user.getFullName(), "ROLE_" + user.getRole())
+        );
     }
 }

@@ -20,15 +20,24 @@ public class UserService implements UserDetailsService {
     private final DtoMapper mapper;
 
     @Override
+    /**
+     * JWT doğrulaması sırasında kullanıcı detayını kullanıcı adına göre getirir.
+     */
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         return userRepository.findByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException("Kullanıcı adı bulunamadı: " + username));
     }
 
+    /**
+     * Figma kullanıcı liste görünümünde kullanılacak tüm kullanıcı DTO'larını döner.
+     */
     public List<UserDTO> getAllUsers() {
         return userRepository.findAll().stream().map(mapper::toUserDto).toList();
     }
 
+    /**
+     * Figma profil detayında gösterilecek tek kullanıcı bilgisini döner.
+     */
     public UserDTO getUserById(Long id) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User bulunamadı. id=" + id));

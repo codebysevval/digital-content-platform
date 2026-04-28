@@ -8,6 +8,9 @@ import java.time.LocalDate;
 public record SubscriptionDTO(
         Long id,
         String planName,
+        double price,
+        String currency,
+        String billingCycle,
         LocalDate startDate,
         LocalDate endDate,
         boolean active,

@@ -9,8 +9,8 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 public class LoginRequest {
-    @NotBlank
+    @NotBlank(message = "Kullanıcı adı zorunludur.")
     private String username;
-    @NotBlank
+    @NotBlank(message = "Şifre zorunludur.")
     private String password;
 }

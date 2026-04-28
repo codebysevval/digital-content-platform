@@ -17,11 +17,17 @@ public class SubscriptionController {
 
     private final SubscriptionService subscriptionService;
 
+    /**
+     * Figma dashboard abonelik paketleri tablosunu beslemek için tüm abonelikleri döner.
+     */
     @GetMapping
     public List<SubscriptionDTO> getAllSubscriptions() {
         return subscriptionService.getAllSubscriptions();
     }
 
+    /**
+     * Figma abonelik detay kartında seçilen paketi döner.
+     */
     @GetMapping("/{id}")
     public SubscriptionDTO getSubscription(@PathVariable Long id) {
         return subscriptionService.getSubscription(id);

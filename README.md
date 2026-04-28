@@ -1,189 +1,93 @@
 # Dijital Icerik Abonelik Platformu - Backend
 
-Spring Boot tabanli bu servis, dijital icerik aboneligi senaryosu icin temel kimlik dogrulama, kullanici, abonelik ve icerik API'lerini saglar. Varsayilan olarak H2 ile aninda ayaga kalkar, istenirse PostgreSQL profiline gecilir.
+Bu backend, Figma'daki User Dashboard Design ekranlarini canli veriyle calistirmak icin hazirlandi.
+Referans tasarim: [Figma User Dashboard Design](https://www.figma.com/make/OwDfaBo61DTm2eF8DLTpDl/User-Dashboard-Design?t=7KQvXyARZPlKURjF-1)
 
-## 1) Teknoloji Yigini
+## Figma Veri Alanlari Analizi
 
-- Java 17
-- Spring Boot 3.2.5
-- Spring Web
-- Spring Security (JWT)
-- Spring Data JPA (Hibernate)
-- H2 (default, in-memory)
-- PostgreSQL
-- Lombok
+Dashboard tarafinda gorsel olarak bulunan ana veri alanlari backend'de su sekilde karsilanir:
 
-## 2) Mimari Ozet
+- Kullanici profili: `username`, `fullName`, `email`, `role`
+- Abonelik paketleri: `planName`, `price`, `currency`, `billingCycle`, `active`
+- Icerik kartlari: `title`, `category`, `thumbnailUrl`, `durationMinutes`, `premium`
+- Sayisal kutular: `totalSubscriptions`, `activeSubscriptions`, `totalContents`, `premiumContents`, `totalCategories`
+- Kategori listesi: kullanicinin erisebildigi iceriklerden uretilen `categories`
 
-Katmanlar:
+## Veritabani Yapisi
 
-- `controller`: REST endpoint'leri
-- `service`: is kurallari
-- `repository`: JPA veri erisimi
-- `entity`: veritabani modeli
-- `dto`: API request/response modelleri
-- `mapper`: entity <-> dto donusumleri
-- `exception`: merkezi hata yonetimi
-- `config`: security ve bean konfigurasyonu
+`src/main/resources/schema.sql` dosyasi uygulama acilisinda otomatik calisir ve tablolari olusturur:
 
-### Entity Iliskileri
+- `users`
+- `subscriptions`
+- `contents`
+- `user_contents` (Many-to-Many join table)
 
-- `User` -> `Subscription`: **OneToMany**
-  - Bir kullanicinin birden fazla aboneligi olabilir.
-  - FK: `subscriptions.user_id -> users.id`
-- `User` <-> `Content`: **ManyToMany**
-  - Bir kullanici birden cok icerige erisebilir.
-  - Bir icerik birden fazla kullaniciya acik olabilir.
-  - Join table: `user_contents`
+## Mock Data (Canliya Yakin)
 
-## 3) Veritabani Profilleri ve Kurulum
+`src/main/resources/data.sql` dosyasi:
 
-### Default: H2 (onerilen ilk calistirma)
+- 5 kullanici (1 tanesi `ADMIN`)
+- 3 farkli paket tipi (`Basic`, `Premium`, `Team`)
+- Dashboard kartlarini besleyen 10 icerik
+- Iliski kayitlariyla gercekci kullanici-erisim dagilimi
 
-- Ekstra kurulum gerekmez.
-- Uygulama acilisinda in-memory veritabani otomatik olusur.
-- H2 console: `http://localhost:8080/h2-console`
-  - JDBC URL: `jdbc:h2:mem:abonelikdb`
-  - Username: `sa`
-  - Password: (bos)
+Tum sifreler `123456` degerinin BCrypt hash halidir; sistem acilir acilmaz login yapilabilir.
 
-### PostgreSQL profili
+## Guvenlik ve Auth
 
-1. PostgreSQL'de veritabani olustur:
-   - `abonelik_sistemi`
-2. `src/main/resources/application-postgres.properties` icindeki bilgileri kendi ortamina gore guncelle:
-   - `spring.datasource.url`
-   - `spring.datasource.username`
-   - `spring.datasource.password`
-3. Ilk acilista schema Hibernate tarafindan olusturulur (`ddl-auto=update`).
-4. `data.sql` otomatik calisir ve ornek veri yukler.
+- `POST /api/auth/register`: yeni kullanici olusturur, sifreyi BCrypt ile hashler, varsayilan `ROLE_USER` atar.
+- `POST /api/auth/login`: kimlik dogrular, JWT ve kullanici ozetini dondurur.
+- `POST /api/contents` ve `DELETE /api/contents/{id}` sadece `ROLE_ADMIN` kullanicilarina aciktir.
 
-### Ornek connection
+## Dashboard Endpoint
 
-- URL: `jdbc:postgresql://localhost:5432/abonelik_sistemi`
-- Username: `postgres`
-- Password: `postgres`
+- `GET /api/dashboard/me`
+  - Profil bilgisi
+  - Sayisal dashboard ozetleri
+  - Kategori listesi
+  - Kullaniciya ait abonelik paketleri
+  - Kullaniciya acik icerik kartlari
 
-## 4) Uygulamayi Calistirma
-
-### Maven ile (default H2)
-
-```bash
-mvn clean spring-boot:run
-```
-
-### Maven ile (PostgreSQL profili)
-
-```bash
-mvn spring-boot:run -Dspring-boot.run.profiles=postgres
-```
-
-### Jar ile
-
-```bash
-mvn clean package
-java -jar target/demo-0.0.1-SNAPSHOT.jar
-```
-
-Default port: `8080`
-
-## 5) Hazir Seed Data
-
-`data.sql` su kayitlari ekler:
-
-- 2 kullanici (`hatice`, `admin`)
-- 3 icerik
-- 2 abonelik
-- `user_contents` iliski kayitlari
-
-Not: seed parola degeri her iki kullanici icin de BCrypt olarak `123456`'dir.
-
-## 6) API Endpoint Listesi
+## Postman Test Tablosu
 
 Base URL: `http://localhost:8080`
 
-### Authentication
+| Ekran | Endpoint | Method | Auth | Ornek JSON Body |
+|---|---|---|---|---|
+| Register | `/api/auth/register` | POST | Yok | `{"username":"newuser","password":"123456","email":"newuser@example.com","fullName":"New User"}` |
+| Login | `/api/auth/login` | POST | Yok | `{"username":"hatice","password":"123456"}` |
+| Dashboard | `/api/dashboard/me` | GET | Bearer JWT | `-` |
+| Tum kullanicilar | `/api/users` | GET | Bearer JWT | `-` |
+| Kullanici detayi | `/api/users/{id}` | GET | Bearer JWT | `-` |
+| Tum abonelikler | `/api/subscriptions` | GET | Bearer JWT | `-` |
+| Abonelik detayi | `/api/subscriptions/{id}` | GET | Bearer JWT | `-` |
+| Tum icerikler | `/api/contents` | GET | Yok | `-` |
+| Icerik detayi | `/api/contents/{id}` | GET | Yok | `-` |
+| Icerik ekle (admin) | `/api/contents` | POST | Bearer JWT (ADMIN) | `{"title":"Yeni Kart","category":"Mobil","thumbnailUrl":"https://picsum.photos/seed/new/600/400","durationMinutes":30,"premium":true}` |
+| Icerik sil (admin) | `/api/contents/{id}` | DELETE | Bearer JWT (ADMIN) | `-` |
 
-- `POST /api/auth/register`
-  - Yeni kullanici kaydi
-  - Body:
-    ```json
-    {
-      "username": "newuser",
-      "password": "123456",
-      "email": "newuser@example.com",
-      "fullName": "New User"
-    }
-    ```
-  - Response: JWT token
-- `POST /api/auth/login`
-  - Giris yapar
-  - Body:
-    ```json
-    {
-      "username": "hatice",
-      "password": "123456"
-    }
-    ```
-  - Response: JWT token
+## Flutter Entegrasyonu
 
-### Users
+Backend DTO'lariyla birebir uyumlu `json_serializable` modeller:
 
-- `GET /api/users`
-  - Tum kullanicilari listeler (DTO doner, password donmez)
-- `GET /api/users/{id}`
-  - Belirli kullaniciyi getirir
+- `flutter_bridge/lib/models/auth_response_model.dart`
+- `flutter_bridge/lib/models/user_session_model.dart`
+- `flutter_bridge/lib/models/subscription_model.dart`
+- `flutter_bridge/lib/models/content_model.dart`
+- `flutter_bridge/lib/models/dashboard_stats_model.dart`
+- `flutter_bridge/lib/models/user_dashboard_model.dart`
+- `flutter_bridge/lib/models/login_request_model.dart`
+- `flutter_bridge/lib/models/register_request_model.dart`
+- `flutter_bridge/lib/services/api_service.dart`
 
-### Subscriptions
+Flutter tarafinda paketler:
 
-- `GET /api/subscriptions`
-  - Tum abonelikleri listeler
-- `GET /api/subscriptions/{id}`
-  - Abonelik getirir
-  - Sure dolmussa `SubscriptionExpiredException` firlatilir
+```bash
+flutter pub add dio json_annotation
+flutter pub add --dev build_runner json_serializable
+flutter pub run build_runner build --delete-conflicting-outputs
+```
 
-### Contents
+## Hatice Icin Not
 
-- `GET /api/contents`
-  - Tum icerikleri listeler
-- `GET /api/contents/{id}`
-  - Tekil icerik getirir
-
-## 7) Hata Yonetimi
-
-`@RestControllerAdvice` ile merkezi olarak yonetilir:
-
-- `ResourceNotFoundException` -> 404
-- `SubscriptionExpiredException` -> 403
-- `BadCredentialsException` -> 401
-- `MethodArgumentNotValidException` -> 400
-- Genel `Exception` -> 500
-
-Tum hata cevaplari standart `ErrorResponse` yapisindadir:
-
-- `timestamp`
-- `status`
-- `error`
-- `message`
-
-## 8) Guvenlik Notlari
-
-- Controller katmaninda entity yerine DTO kullanilir.
-- Password alanlari API response'larinda asla donmez.
-- JWT tabanli stateless security yapisi kullanilir.
-- `/api/auth/**` ve `/api/contents/**` public, diger endpoint'ler auth gerektirir.
-
-## 9) Yol Haritasi (Acik Gorevler)
-
-Kod icinde TODO olarak isaretli:
-
-- Payment Gateway entegrasyonu (`SubscriptionService`)
-- Gelismis icerik filtreleme (`ContentService`)
-
-## 10) Takim Devri Notu 
-
-- Projeyi clone ettikten sonra Java 17 ile direkt calistirabilirsin (H2 default oldugu icin).
-- PostgreSQL ile devam edeceksen sadece `application-postgres.properties` dosyasini guncelleyip `postgres` profiliyle calistir.
-- Uygulamayi kaldirdiginda bos ekran yerine seed veriler hemen gorulur.
-- Is mantigi servis katmaninda, API sozlesmeleri DTO katmaninda tutuldugu icin kodu takip etmek kolaydir.
-- Ilk test icin: once `POST /api/auth/login`, sonra JWT ile korumali endpoint'lere istek at.
+Controller ve servis metodlarina detayli Turkce aciklamalar eklendi. Kod okunurken her metodun hangi Figma ekranina karsilik geldigi hizlica izlenebilir.

@@ -28,6 +28,12 @@ public class Content {
     private String category;
 
     @Column(nullable = false)
+    private String thumbnailUrl;
+
+    @Column(nullable = false)
+    private Integer durationMinutes;
+
+    @Column(nullable = false)
     private boolean premium;
 
     @ManyToMany(mappedBy = "accessibleContents")
