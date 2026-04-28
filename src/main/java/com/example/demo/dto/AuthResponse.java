@@ -1,4 +1,3 @@
 package com.example.demo.dto;
-
-public class AuthResponse {
-}
+//Kullanıcıya döneceğimiz cevap
+public record AuthResponse(String token) {}

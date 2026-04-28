@@ -180,7 +180,7 @@ Kod icinde TODO olarak isaretli:
 - Payment Gateway entegrasyonu (`SubscriptionService`)
 - Gelismis icerik filtreleme (`ContentService`)
 
-## 10) Takim Devri Notu (Hatice icin)
+## 10) Takim Devri Notu 
 
 - Projeyi clone ettikten sonra Java 17 ile direkt calistirabilirsin (H2 default oldugu icin).
 - PostgreSQL ile devam edeceksen sadece `application-postgres.properties` dosyasini guncelleyip `postgres` profiliyle calistir.
