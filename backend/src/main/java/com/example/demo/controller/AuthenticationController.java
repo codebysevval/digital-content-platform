@@ -61,12 +61,25 @@ public class AuthenticationController {
      * Figma Login ekranındaki kimlik doğrulama akışını tamamlar ve JWT + kullanıcı özeti döner.
      */
     public AuthResponse login(@Valid @RequestBody LoginRequest request) {
+        String identifier = resolveLoginIdentifier(request);
         authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword())
+                new UsernamePasswordAuthenticationToken(identifier, request.getPassword())
         );
-        User user = userRepository.findByUsername(request.getUsername())
+        User user = userRepository.findByUsername(identifier)
                 .orElseThrow(() -> new IllegalArgumentException("Kullanıcı bulunamadı."));
         return createAuthResponse(user);
+    }
+
+    private String resolveLoginIdentifier(LoginRequest request) {
+        if (request.getUsername() != null && !request.getUsername().isBlank()) {
+            return request.getUsername();
+        }
+        if (request.getEmail() != null && !request.getEmail().isBlank()) {
+            return userRepository.findByEmail(request.getEmail())
+                    .map(User::getUsername)
+                    .orElseThrow(() -> new IllegalArgumentException("Bu e-posta ile kullanıcı bulunamadı."));
+        }
+        throw new IllegalArgumentException("Kullanıcı adı veya e-posta zorunludur.");
     }
 
     private AuthResponse createAuthResponse(User user) {

@@ -33,11 +33,22 @@ Dashboard tarafinda gorsel olarak bulunan ana veri alanlari backend'de su sekild
 
 Tum sifreler `123456` degerinin BCrypt hash halidir; sistem acilir acilmaz login yapilabilir.
 
+## Entegrasyon Notu (Frontend + Backend)
+
+- Proje artik net olarak iki klasore ayrildi:
+  - `Abonelik_Sistemi/backend` -> Spring Boot API
+  - `Abonelik_Sistemi/frontend` -> React (Vite) arayuzu
+- Frontend login/register formlari dogrudan backend endpointlerine baglandi:
+  - `POST /api/auth/login`
+  - `POST /api/auth/register`
+- Dashboard ekrani `GET /api/dashboard/me` endpointinden canli veri cekiyor.
+
 ## Guvenlik ve Auth
 
 - `POST /api/auth/register`: yeni kullanici olusturur, sifreyi BCrypt ile hashler, varsayilan `ROLE_USER` atar.
-- `POST /api/auth/login`: kimlik dogrular, JWT ve kullanici ozetini dondurur.
+- `POST /api/auth/login`: kimlik dogrular, JWT ve kullanici ozetini dondurur (username veya email ile login desteklenir).
 - `POST /api/contents` ve `DELETE /api/contents/{id}` sadece `ROLE_ADMIN` kullanicilarina aciktir.
+- CORS ayarlari ile `http://localhost:5173`, `http://127.0.0.1:5173`, `http://localhost:3000` originlerinden API erisimi izinlidir.
 
 ## Dashboard Endpoint
 
@@ -55,7 +66,7 @@ Base URL: `http://localhost:8080`
 | Ekran | Endpoint | Method | Auth | Ornek JSON Body |
 |---|---|---|---|---|
 | Register | `/api/auth/register` | POST | Yok | `{"username":"newuser","password":"123456","email":"newuser@example.com","fullName":"New User"}` |
-| Login | `/api/auth/login` | POST | Yok | `{"username":"hatice","password":"123456"}` |
+| Login | `/api/auth/login` | POST | Yok | `{"email":"hatice@example.com","password":"123456"}` |
 | Dashboard | `/api/dashboard/me` | GET | Bearer JWT | `-` |
 | Tum kullanicilar | `/api/users` | GET | Bearer JWT | `-` |
 | Kullanici detayi | `/api/users/{id}` | GET | Bearer JWT | `-` |
@@ -88,6 +99,55 @@ flutter pub add --dev build_runner json_serializable
 flutter pub run build_runner build --delete-conflicting-outputs
 ```
 
-## Hatice Icin Not
+## Not
 
 Controller ve servis metodlarina detayli Turkce aciklamalar eklendi. Kod okunurken her metodun hangi Figma ekranina karsilik geldigi hizlica izlenebilir.
+
+## Calistirma Talimati (Adim Adim)
+
+### 1) Backend'i baslat
+
+1. Terminal ac:
+2. Backend klasorune gir:
+   ```bash
+   cd backend
+   ```
+3. Spring Boot'u baslat:
+   ```bash
+   ./mvnw spring-boot:run
+   ```
+4. Uygulama acilisinda:
+   - veritabani otomatik olusur (`schema.sql`)
+   - mock veriler otomatik yuklenir (`data.sql`)
+
+### 2) Frontend'i baslat
+
+1. Ikinci terminal ac:
+2. Frontend klasorune gir:
+   ```bash
+   cd frontend
+   ```
+3. Paketleri kur:
+   ```bash
+   npm install
+   ```
+4. Vite dev server'i baslat:
+   ```bash
+   npm run dev
+   ```
+5. Tarayicida ac:
+   - `http://localhost:5173`
+
+### 3) Giris bilgileri
+
+- Normal kullanici: `hatice@example.com / 123456`
+- Admin kullanici: `admin@example.com / 123456`
+
+### 4) Tek Run hedefi (tek porttan servis)
+
+- Frontend build alindiktan sonra `frontend/dist` icerigini `backend/src/main/resources/static` altina kopyalayarak arayuzu backend icinden de servis edebilirsin.
+- Bu durumda sadece backend komutu yeterli olur:
+  ```bash
+  cd backend
+  ./mvnw spring-boot:run
+  ```

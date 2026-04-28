@@ -9,8 +9,13 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 public class LoginRequest {
-    @NotBlank(message = "Kullanıcı adı zorunludur.")
+    /**
+     * Frontend ile tam uyumluluk için girişte e-posta alanı da desteklenir.
+     */
+    private String email;
+
     private String username;
+
     @NotBlank(message = "Şifre zorunludur.")
     private String password;
 }
