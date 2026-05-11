@@ -29,3 +29,10 @@ sochen-backend/target/
 sochen-backend/.mvn/wrapper/maven-wrapper.jar
 sochen-backend/data/uploads/*
 !sochen-backend/data/uploads/.gitkeep
+
+# --- Kök dizinde kalan eski proje izleri ---
+/src/
+/target/
+/pom.xml
+/HELP.md
+/docs/
