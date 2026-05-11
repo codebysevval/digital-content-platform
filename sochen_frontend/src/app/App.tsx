@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router';
 import { Toaster } from 'sonner';
 import { Bell, Search, X } from 'lucide-react';
 import { PricingCheckout } from './components/PricingCheckout';
@@ -10,77 +11,138 @@ import { UserMenu } from './components/UserMenu';
 import { Sidebar } from './components/Sidebar';
 import { LikedContent } from './components/LikedContent';
 import { CreatorProfile } from './components/CreatorProfile';
+import { OwnProfile } from './components/OwnProfile';
 import { OfflineContent } from './components/OfflineContent';
 import { ContentDetail } from './components/ContentDetail';
 import { LoginScreen } from './components/LoginScreen';
+import { PaymentMethodUpdate } from './components/PaymentMethodUpdate';
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from './components/ui/popover';
-import { useAuthStore } from '../store';
+import { useAuthStore, useNotificationStore } from '../store';
+import { resolveMediaUrl } from '../lib/api';
 
-const DUMMY_NOTIFICATIONS = [
-  {
-    id: 1,
-    initials: 'ZK',
-    title: 'Zeynep Kaya yeni bir içerik yayınladı',
-    body: '"Güncel Ekonomi Gazetesi - 21 Nisan" şimdi yayında.',
-    time: '10 dk önce',
-  },
-  {
-    id: 2,
-    initials: 'AD',
-    title: 'Ayşe Demir yeni bir bölüm ekledi',
-    body: 'İleri React Teknikleri kursuna yeni modül eklendi.',
-    time: '2 saat önce',
-  },
-  {
-    id: 3,
-    initials: 'CÖ',
-    title: 'Can Özdemir bir podcast yayınladı',
-    body: 'Haftalık Teknoloji Podcast bu haftaki bölümüyle yayında.',
-    time: 'Dün',
-  },
-];
+function pageToPath(page: string): string {
+  const paths: Record<string, string> = {
+    discovery: '/',
+    pricing: '/pricing',
+    admin: '/admin',
+    creator: '/studio',
+    settings: '/settings',
+    liked: '/liked',
+    offline: '/offline',
+    'own-profile': '/profile/me',
+    'payment-method': '/payment-method',
+  };
+  if (page in paths) return paths[page];
+  const creatorMatch = page.match(/^creator-(\d+)$/);
+  if (creatorMatch) return `/creator/${creatorMatch[1]}`;
+  return '/';
+}
 
 export default function App() {
   const user = useAuthStore((s) => s.user);
+  const fetchCurrentUser = useAuthStore((s) => s.fetchCurrentUser);
   const isAdmin = user?.role === 'admin';
 
-  const [activePage, setActivePage] = useState('discovery');
+  const notifications = useNotificationStore((s) => s.items);
+  const unreadCount = useNotificationStore((s) => s.unreadCount);
+  const fetchNotifications = useNotificationStore((s) => s.fetchNotifications);
+  const markNotifRead = useNotificationStore((s) => s.markRead);
+
+  const [notifOpen, setNotifOpen] = useState(false);
+
+  const location = useLocation();
+  const navigate = useNavigate();
+  const pathname = location.pathname;
+
   const [activeCategory] = useState<'all'>('all');
-  const [selectedContentId, setSelectedContentId] = useState<number | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [authPanel, setAuthPanel] = useState<'login' | 'signup' | null>(null);
 
-  // Bounce non-admins out of the admin route — defence-in-depth route guard.
-  useEffect(() => {
-    if (activePage === 'admin' && !isAdmin) {
-      setActivePage('discovery');
-    }
-  }, [activePage, isAdmin]);
+  // Parse content/creator IDs from URL
+  const contentMatch = pathname.match(/^\/content\/(\d+)$/);
+  const selectedContentId = contentMatch ? parseInt(contentMatch[1]) : null;
+  const creatorMatch = pathname.match(/^\/creator\/(\d+)$/);
+  const creatorId = creatorMatch ? parseInt(creatorMatch[1]) : null;
 
-  // Auto-close the auth modal once the user is authenticated.
+  // Derive active page name for sidebar highlighting
+  const activePage = (() => {
+    if (selectedContentId !== null) return 'content-detail';
+    if (creatorId !== null) return `creator-${creatorId}`;
+    if (pathname === '/profile/me') return 'own-profile';
+    const pageMap: Record<string, string> = {
+      '/': 'discovery',
+      '/pricing': 'pricing',
+      '/admin': 'admin',
+      '/studio': 'creator',
+      '/settings': 'settings',
+      '/liked': 'liked',
+      '/offline': 'offline',
+      '/payment-method': 'payment-method',
+    };
+    return pageMap[pathname] ?? 'discovery';
+  })();
+
+  useEffect(() => {
+    const token = localStorage.getItem('sochen_token');
+    if (token) {
+      void fetchCurrentUser().catch(() => {});
+    }
+  }, [fetchCurrentUser]);
+
+  useEffect(() => {
+    if (!user) return;
+    void fetchNotifications();
+    const id = setInterval(() => { void fetchNotifications(); }, 60_000);
+    return () => clearInterval(id);
+  }, [user, fetchNotifications]);
+
+  // Route guard: non-admins cannot access /admin
+  useEffect(() => {
+    if (pathname === '/admin' && !isAdmin) {
+      navigate('/');
+    }
+  }, [pathname, isAdmin, navigate]);
+
+  // Own profile & payment-method route guards: require login
+  useEffect(() => {
+    if ((pathname === '/profile/me' || pathname === '/payment-method') && !user) {
+      navigate('/');
+    }
+  }, [pathname, user, navigate]);
+
+  // Logged-out users should not stay on account-only routes (stale studio UI, etc.)
+  useEffect(() => {
+    if (user) return;
+    const guestRestricted =
+      pathname === '/studio' ||
+      pathname === '/settings' ||
+      pathname === '/liked' ||
+      pathname === '/offline' ||
+      pathname === '/admin';
+    if (guestRestricted) {
+      navigate('/', { replace: true });
+    }
+  }, [user, pathname, navigate]);
+
+  // Auto-close the auth modal once the user is authenticated
   useEffect(() => {
     if (user) setAuthPanel(null);
   }, [user]);
 
+  const handleNavigate = (page: string) => {
+    navigate(pageToPath(page));
+  };
+
   const handleContentClick = (contentId: number) => {
-    setSelectedContentId(contentId);
+    navigate(`/content/${contentId}`);
   };
 
   const handleBackFromContent = () => {
-    setSelectedContentId(null);
-  };
-
-  // Any navigation that changes the main route (Sidebar, UserMenu, etc.) must
-  // also tear down the ContentDetail overlay — otherwise it stays mounted on
-  // top of the new page (the "ghost overlay" bug). This mirrors what a real
-  // router would do when leaving `/content/:id`.
-  const handleNavigate = (page: string) => {
-    setSelectedContentId(null);
-    setActivePage(page);
+    navigate(-1);
   };
 
   const renderPage = () => {
@@ -94,31 +156,54 @@ export default function App() {
       );
     }
 
-    if (activePage.startsWith('creator-')) {
-      const creatorId = parseInt(activePage.split('-')[1]);
+    if (creatorId !== null) {
       return <CreatorProfile creatorId={creatorId} onContentClick={handleContentClick} />;
+    }
+
+    if (pathname === '/profile/me') {
+      return <OwnProfile onContentClick={handleContentClick} />;
     }
 
     switch (activePage) {
       case 'discovery':
-        return <ContentDiscovery activeCategory={activeCategory} onContentClick={handleContentClick} searchQuery={searchQuery} />;
+        return (
+          <ContentDiscovery
+            activeCategory={activeCategory}
+            onContentClick={handleContentClick}
+            searchQuery={searchQuery}
+          />
+        );
       case 'pricing':
-        return <PricingCheckout onSuccess={() => setActivePage('settings')} />;
+        return <PricingCheckout onSuccess={() => navigate('/settings')} />;
       case 'admin':
         if (!isAdmin) {
-          return <ContentDiscovery activeCategory={activeCategory} onContentClick={handleContentClick} searchQuery={searchQuery} />;
+          return (
+            <ContentDiscovery
+              activeCategory={activeCategory}
+              onContentClick={handleContentClick}
+              searchQuery={searchQuery}
+            />
+          );
         }
         return <AdminDashboard />;
       case 'creator':
         return <CreatorStudio />;
       case 'settings':
         return <UserSettings />;
+      case 'payment-method':
+        return <PaymentMethodUpdate />;
       case 'liked':
         return <LikedContent onContentClick={handleContentClick} />;
       case 'offline':
         return <OfflineContent onContentClick={handleContentClick} />;
       default:
-        return <ContentDiscovery activeCategory={activeCategory} onContentClick={handleContentClick} searchQuery={searchQuery} />;
+        return (
+          <ContentDiscovery
+            activeCategory={activeCategory}
+            onContentClick={handleContentClick}
+            searchQuery={searchQuery}
+          />
+        );
     }
   };
 
@@ -129,10 +214,7 @@ export default function App() {
       <nav className="h-16 bg-[#0F172A] border-b border-white/5 flex items-center px-6 gap-6">
         <div className="w-64 flex-shrink-0 px-6">
           <button
-            onClick={() => {
-              setActivePage('discovery');
-              setSelectedContentId(null);
-            }}
+            onClick={() => navigate('/')}
             className="text-2xl font-bold bg-gradient-to-r from-indigo-400 to-blue-400 bg-clip-text text-transparent hover:scale-105 transition-transform"
           >
             SOCHEN
@@ -160,14 +242,19 @@ export default function App() {
         <div className="flex-shrink-0 flex items-center gap-3">
           {user ? (
             <>
-              <Popover>
+              <Popover open={notifOpen} onOpenChange={(open) => {
+                setNotifOpen(open);
+                if (open) markNotifRead();
+              }}>
                 <PopoverTrigger asChild>
                   <button
                     aria-label="Bildirimler"
                     className="relative w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors"
                   >
                     <Bell className="text-white" size={20} />
-                    <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-indigo-400"></span>
+                    {unreadCount > 0 && (
+                      <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-indigo-400" />
+                    )}
                   </button>
                 </PopoverTrigger>
                 <PopoverContent
@@ -178,41 +265,63 @@ export default function App() {
                   <div className="px-4 py-3 border-b border-white/10">
                     <p className="font-semibold text-white">Bildirimler</p>
                     <p className="text-xs text-gray-400">
-                      {DUMMY_NOTIFICATIONS.length} yeni bildirim
+                      {notifications.length === 0
+                        ? 'Yeni bildirim yok'
+                        : `${unreadCount > 0 ? unreadCount : notifications.length} bildirim`}
                     </p>
                   </div>
                   <div className="max-h-80 overflow-auto py-1">
-                    {DUMMY_NOTIFICATIONS.map((notification) => (
+                    {notifications.length === 0 ? (
+                      <p className="text-center text-sm text-gray-500 py-6">
+                        Takip ettiğiniz üreticilerden yeni içerik yok
+                      </p>
+                    ) : (
+                      notifications.map((n) => (
+                        <button
+                          key={n.contentId}
+                          type="button"
+                          onClick={() => {
+                            setNotifOpen(false);
+                            navigate(`/content/${n.contentId}`);
+                          }}
+                          className="w-full text-left flex items-start gap-3 px-4 py-3 hover:bg-white/5 transition-colors"
+                        >
+                          <div className="w-9 h-9 flex-shrink-0 rounded-full bg-gradient-to-r from-indigo-500 to-blue-500 flex items-center justify-center text-white text-xs font-semibold overflow-hidden">
+                            {n.creatorAvatarUrl ? (
+                              <img
+                                src={resolveMediaUrl(n.creatorAvatarUrl) ?? ''}
+                                alt={n.creatorName}
+                                className="w-full h-full object-cover"
+                                onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                              />
+                            ) : (
+                              n.creatorInitials
+                            )}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium text-white truncate">
+                              {n.creatorName} yeni içerik yayınladı
+                            </p>
+                            <p className="text-xs text-gray-400 mt-0.5 line-clamp-1">
+                              {n.contentTitle}
+                            </p>
+                            <p className="text-xs text-indigo-400 mt-1">{n.uploadedAt}</p>
+                          </div>
+                        </button>
+                      ))
+                    )}
+                  </div>
+                  {notifications.length > 0 && (
+                    <div className="px-4 py-2 border-t border-white/10">
                       <button
-                        key={notification.id}
                         type="button"
-                        className="w-full text-left flex items-start gap-3 px-4 py-3 hover:bg-white/5 transition-colors"
+                        onClick={() => { setNotifOpen(false); navigate('/'); }}
+                        className="w-full text-center text-sm text-indigo-400 hover:text-indigo-300 transition-colors py-1"
                       >
-                        <div className="w-9 h-9 flex-shrink-0 rounded-full bg-gradient-to-r from-indigo-500 to-blue-500 flex items-center justify-center text-white text-xs font-semibold">
-                          {notification.initials}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium text-white">
-                            {notification.title}
-                          </p>
-                          <p className="text-xs text-gray-400 mt-0.5 line-clamp-2">
-                            {notification.body}
-                          </p>
-                          <p className="text-xs text-indigo-400 mt-1">
-                            {notification.time}
-                          </p>
-                        </div>
+                        İçerik Keşfet
                       </button>
-                    ))}
-                  </div>
-                  <div className="px-4 py-2 border-t border-white/10">
-                    <button
-                      type="button"
-                      className="w-full text-center text-sm text-indigo-400 hover:text-indigo-300 transition-colors py-1"
-                    >
-                      Tümünü görüntüle
-                    </button>
-                  </div>
+                    </div>
+                  )}
                 </PopoverContent>
               </Popover>
               <UserMenu onNavigate={handleNavigate} />

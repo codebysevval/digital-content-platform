@@ -1,0 +1,24 @@
+# Genel Git ve IDE Dosyaları
+.git/
+.vscode/
+.idea/
+*.DS_Store
+
+# Frontend (Vite / React) Dosyaları
+sochen_frontend/node_modules/
+sochen_frontend/dist/
+sochen_frontend/package-lock.json
+sochen_frontend/.eslintcache
+
+# Backend (Spring Boot / Maven) Dosyaları
+sochen-backend/target/
+sochen-backend/*.jar
+sochen-backend/*.war
+sochen-backend/.mvn/
+
+# Loglar ve Geçici Dosyalar
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+

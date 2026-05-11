@@ -1,6 +1,8 @@
 import { Heart, User, ChevronDown, ChevronRight, Download } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { useCreatorStore } from '../../store';
+import { useAuthStore, useCreatorStore } from '../../store';
+import { resolveMediaUrl } from '../../lib/api';
+import { getAvatarInitials } from '../../lib/formatters';
 
 interface SidebarProps {
   onNavigate: (page: string) => void;
@@ -9,12 +11,14 @@ interface SidebarProps {
 
 export function Sidebar({ onNavigate, activePage }: SidebarProps) {
   const [isFollowingExpanded, setIsFollowingExpanded] = useState(true);
+  const userId = useAuthStore((s) => s.user?.id);
   const followedCreators = useCreatorStore((s) => s.followedCreators);
   const fetchFollowedCreators = useCreatorStore((s) => s.fetchFollowedCreators);
 
   useEffect(() => {
+    if (!userId) return;
     void fetchFollowedCreators();
-  }, [fetchFollowedCreators]);
+  }, [userId, fetchFollowedCreators]);
 
   return (
     <aside className="w-64 bg-[#0F172A] border-r border-white/5 h-full flex flex-col">
@@ -44,8 +48,16 @@ export function Sidebar({ onNavigate, activePage }: SidebarProps) {
                     onClick={() => onNavigate(`creator-${creator.id}`)}
                     className="w-full flex items-center gap-3 px-4 py-2 rounded-lg text-gray-400 hover:bg-white/5 hover:text-gray-200 transition-all"
                   >
-                    <div className="w-8 h-8 rounded-full bg-gradient-to-r from-blue-500 to-blue-600 flex items-center justify-center text-white text-xs font-semibold">
-                      {creator.avatar}
+                    <div className="w-8 h-8 rounded-full bg-gradient-to-r from-blue-500 to-blue-600 flex items-center justify-center text-white text-xs font-semibold overflow-hidden">
+                      {creator.avatar && creator.avatar.startsWith('/uploads/') ? (
+                        <img
+                          src={resolveMediaUrl(creator.avatar)}
+                          alt={creator.name}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        getAvatarInitials(creator.name, creator.avatar)
+                      )}
                     </div>
                     <div className="flex-1 text-left">
                       <p className="text-sm font-medium">{creator.name}</p>

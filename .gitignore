@@ -1,0 +1,31 @@
+# --- Ortak ---
+.DS_Store
+Thumbs.db
+*.log
+*.swp
+*.tmp
+# Tüm dizinlerdeki gerçek ortam dosyaları (.env.example hariç)
+.env
+.env.local
+.env.*.local
+
+# Yerel / IDE
+.idea/
+*.iml
+.vscode/
+*.code-workspace
+
+# --- Frontend (sochen_frontend) ---
+sochen_frontend/node_modules/
+sochen_frontend/dist/
+sochen_frontend/.vite/
+sochen_frontend/coverage/
+
+# Tek seferlik SQL / sorgu dosyaları (repoya girmesin)
+*.pgsql
+
+# --- Backend (sochen-backend) ---
+sochen-backend/target/
+sochen-backend/.mvn/wrapper/maven-wrapper.jar
+sochen-backend/data/uploads/*
+!sochen-backend/data/uploads/.gitkeep

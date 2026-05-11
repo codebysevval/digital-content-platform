@@ -1,13 +1,6 @@
 import { create } from 'zustand';
-import type { Creator, CreatorContent, FollowedCreator } from '../types';
-import {
-  mockCreators,
-  mockCreatorContent,
-  mockFollowedCreators,
-} from '../lib/mockData';
-
-const FAKE_LATENCY_MS = 200;
-const wait = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
+import type { Creator, CreatorContent, CreatorSearchResult, FollowedCreator } from '../types';
+import { api } from '../lib/api';
 
 interface CreatorState {
   creators: Record<number, Creator>;
@@ -22,53 +15,33 @@ interface CreatorState {
   fetchFollowedCreators: () => Promise<FollowedCreator[]>;
   fetchCreatorById: (id: number) => Promise<Creator | null>;
   fetchCreatorContent: (creatorId: number) => Promise<CreatorContent[]>;
+  searchCreators: (query: string) => Promise<CreatorSearchResult[]>;
   toggleFollow: (creatorId: number) => Promise<boolean>;
   toggleNotifications: (creatorId: number) => Promise<boolean>;
   isFollowing: (creatorId: number) => boolean;
   isNotified: (creatorId: number) => boolean;
+  reset: () => void;
 }
 
-// Format a raw follower count into the display string used by the
-// FollowedCreator DTO when re-adding a creator to the sidebar after a
-// follow toggle.
-const formatFollowerCount = (count: number): string => {
-  if (count >= 1_000_000) return `${(count / 1_000_000).toFixed(1)}M`;
-  if (count >= 1_000) return `${(count / 1_000).toFixed(1)}B`;
-  return String(count);
-};
-
-const buildFollowedFromCreator = (id: number): FollowedCreator | null => {
-  const known = mockFollowedCreators.find((c) => c.id === id);
-  if (known) return known;
-  const creator = mockCreators[id];
-  if (!creator) return null;
-  return {
-    id: creator.id,
-    name: creator.name,
-    avatar: creator.avatar,
-    followers: formatFollowerCount(creator.followers),
-  };
-};
-
 export const useCreatorStore = create<CreatorState>((set, get) => ({
-  creators: mockCreators,
-  followedCreators: mockFollowedCreators,
-  // Mark every sidebar-listed creator as currently followed so the toggle
-  // state stays in sync with the visible list on first render.
-  followingStatus: Object.fromEntries(
-    mockFollowedCreators.map((c) => [c.id, true]),
-  ),
-  notificationStatus: { 1: true, 2: true, 3: true },
+  creators: {},
+  followedCreators: [],
+  followingStatus: {},
+  notificationStatus: {},
   isLoading: false,
   error: null,
 
   fetchFollowedCreators: async () => {
     set({ isLoading: true, error: null });
     try {
-      // TODO: replace with `await fetch('/api/users/me/following')`
-      await wait(FAKE_LATENCY_MS);
-      set({ followedCreators: mockFollowedCreators, isLoading: false });
-      return mockFollowedCreators;
+      const data = await api.get<FollowedCreator[]>('/api/users/me/following');
+      const statusMap = Object.fromEntries(data.map((c) => [c.id, true]));
+      set({
+        followedCreators: data,
+        followingStatus: statusMap,
+        isLoading: false,
+      });
+      return data;
     } catch (err) {
       const message =
         err instanceof Error ? err.message : 'Followed creators fetch failed';
@@ -80,13 +53,12 @@ export const useCreatorStore = create<CreatorState>((set, get) => ({
   fetchCreatorById: async (id) => {
     set({ isLoading: true, error: null });
     try {
-      // TODO: replace with `await fetch(`/api/creators/${id}`)`
-      await wait(FAKE_LATENCY_MS);
-      // Return null for unknown ids instead of silently falling back to
-      // creator #1 — the previous fallback masked missing data and made
-      // every unmapped sidebar entry render as Ayşe Demir.
-      const creator = mockCreators[id] ?? null;
-      set({ isLoading: false });
+      const creator = await api.get<Creator>(`/api/creators/${id}`).catch(() => null);
+      if (creator) {
+        set((s) => ({ creators: { ...s.creators, [id]: creator }, isLoading: false }));
+      } else {
+        set({ isLoading: false });
+      }
       return creator;
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Creator fetch failed';
@@ -96,59 +68,62 @@ export const useCreatorStore = create<CreatorState>((set, get) => ({
   },
 
   fetchCreatorContent: async (creatorId) => {
-    // TODO: replace with `await fetch(`/api/creators/${creatorId}/content`)`
-    await wait(FAKE_LATENCY_MS);
-    void creatorId;
-    return mockCreatorContent;
+    return api.get<CreatorContent[]>(`/api/creators/${creatorId}/content`);
+  },
+
+  searchCreators: async (query) => {
+    try {
+      return await api.get<CreatorSearchResult[]>(
+        `/api/creators/search?query=${encodeURIComponent(query)}`,
+      );
+    } catch {
+      return [];
+    }
   },
 
   toggleFollow: async (creatorId) => {
-    // TODO: replace with `await fetch(`/api/creators/${creatorId}/follow`, { method: 'POST' })`
-    await wait(FAKE_LATENCY_MS / 4);
-    const { followingStatus, followedCreators } = get();
-    const current = !!followingStatus[creatorId];
-    const next = !current;
-
-    if (!next) {
-      // Unfollow: drop the creator from the sidebar list so they vanish from
-      // the UI immediately, and clear the follow flag.
+    const res = await api.post<{ following: boolean; followerCount: number }>(
+      `/api/creators/${creatorId}/follow`,
+    );
+    const currentCreator = get().creators[creatorId];
+    set({
+      followingStatus: { ...get().followingStatus, [creatorId]: res.following },
+      creators: currentCreator
+        ? { ...get().creators, [creatorId]: { ...currentCreator, followers: res.followerCount } }
+        : get().creators,
+    });
+    if (!res.following) {
       set({
-        followingStatus: { ...followingStatus, [creatorId]: false },
-        followedCreators: followedCreators.filter((c) => c.id !== creatorId),
-      });
-      return next;
-    }
-
-    // Follow: re-attach to the sidebar list if we know how to render the
-    // creator. If not present in the catalogue we just flip the flag.
-    const alreadyListed = followedCreators.some((c) => c.id === creatorId);
-    if (!alreadyListed) {
-      const entry = buildFollowedFromCreator(creatorId);
-      set({
-        followingStatus: { ...followingStatus, [creatorId]: true },
-        followedCreators: entry
-          ? [...followedCreators, entry]
-          : followedCreators,
+        followedCreators: get().followedCreators.filter((c) => c.id !== creatorId),
       });
     } else {
-      set({
-        followingStatus: { ...followingStatus, [creatorId]: true },
-      });
+      void get().fetchFollowedCreators();
     }
-    return next;
+    return res.following;
   },
 
   toggleNotifications: async (creatorId) => {
-    // TODO: replace with `await fetch(`/api/creators/${creatorId}/notifications`, { method: 'POST' })`
-    await wait(FAKE_LATENCY_MS / 4);
-    const current = !!get().notificationStatus[creatorId];
-    const next = !current;
+    const res = await api.post<{ notificationsEnabled: boolean }>(
+      `/api/creators/${creatorId}/notifications`,
+    );
     set({
-      notificationStatus: { ...get().notificationStatus, [creatorId]: next },
+      notificationStatus: {
+        ...get().notificationStatus,
+        [creatorId]: res.notificationsEnabled,
+      },
     });
-    return next;
+    return res.notificationsEnabled;
   },
 
   isFollowing: (creatorId) => !!get().followingStatus[creatorId],
   isNotified: (creatorId) => !!get().notificationStatus[creatorId],
+
+  reset: () => set({
+    creators: {},
+    followedCreators: [],
+    followingStatus: {},
+    notificationStatus: {},
+    isLoading: false,
+    error: null,
+  }),
 }));

@@ -8,23 +8,14 @@ import type {
   UsageQuota,
   YearlyTogglePlan,
 } from '../types';
-import {
-  mockBillingHistory,
-  mockCheckoutPlans,
-  mockPricingPlans,
-  mockSubscriptionStatus,
-  mockUsageQuota,
-  mockYearlyTogglePlans,
-} from '../lib/mockData';
-
-const FAKE_LATENCY_MS = 200;
-const wait = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
+import { api } from '../lib/api';
 
 interface SubscriptionState {
   pricingPlans: PricingPlan[];
   checkoutPlans: CheckoutPlan[];
   yearlyTogglePlans: YearlyTogglePlan[];
   status: SubscriptionStatus;
+  statusFetched: boolean;
   billingHistory: BillingHistoryItem[];
   usageQuota: UsageQuota;
   isLoading: boolean;
@@ -38,25 +29,43 @@ interface SubscriptionState {
   fetchUsageQuota: () => Promise<UsageQuota>;
   submitPayment: (payload: PaymentRequest) => Promise<{ success: boolean }>;
   cancelSubscription: () => Promise<void>;
+  reset: () => void;
 }
 
+const EMPTY_STATUS: SubscriptionStatus = {
+  planName: 'Ücretsiz',
+  price: 0,
+  isActive: false,
+  nextBillingDate: '',
+  features: [],
+};
+
+const EMPTY_USAGE: UsageQuota = {
+  apiCallsUsed: 0,
+  apiCallsLimit: 0,
+  storageUsedGb: 0,
+  storageLimitGb: 0,
+  teamMembersUsed: 0,
+  teamMembersLimit: 0,
+};
+
 export const useSubscriptionStore = create<SubscriptionState>((set, get) => ({
-  pricingPlans: mockPricingPlans,
-  checkoutPlans: mockCheckoutPlans,
-  yearlyTogglePlans: mockYearlyTogglePlans,
-  status: mockSubscriptionStatus,
-  billingHistory: mockBillingHistory,
-  usageQuota: mockUsageQuota,
+  pricingPlans: [],
+  checkoutPlans: [],
+  yearlyTogglePlans: [],
+  status: EMPTY_STATUS,
+  statusFetched: false,
+  billingHistory: [],
+  usageQuota: EMPTY_USAGE,
   isLoading: false,
   error: null,
 
   fetchPricingPlans: async () => {
     set({ isLoading: true, error: null });
     try {
-      // TODO: replace with `await fetch('/api/plans/pricing')`
-      await wait(FAKE_LATENCY_MS);
-      set({ pricingPlans: mockPricingPlans, isLoading: false });
-      return mockPricingPlans;
+      const data = await api.get<PricingPlan[]>('/api/plans/pricing');
+      set({ pricingPlans: data, isLoading: false });
+      return data;
     } catch (err) {
       const message =
         err instanceof Error ? err.message : 'Pricing plans fetch failed';
@@ -66,68 +75,52 @@ export const useSubscriptionStore = create<SubscriptionState>((set, get) => ({
   },
 
   fetchCheckoutPlans: async () => {
-    // TODO: replace with `await fetch('/api/plans/checkout')`
-    await wait(FAKE_LATENCY_MS);
-    set({ checkoutPlans: mockCheckoutPlans });
-    return mockCheckoutPlans;
+    const data = await api.get<CheckoutPlan[]>('/api/plans/checkout');
+    set({ checkoutPlans: data });
+    return data;
   },
 
   fetchYearlyTogglePlans: async () => {
-    // TODO: replace with `await fetch('/api/plans/marketing')`
-    await wait(FAKE_LATENCY_MS);
-    set({ yearlyTogglePlans: mockYearlyTogglePlans });
-    return mockYearlyTogglePlans;
+    const data = await api.get<YearlyTogglePlan[]>('/api/plans/marketing');
+    set({ yearlyTogglePlans: data });
+    return data;
   },
 
   fetchSubscriptionStatus: async () => {
     set({ isLoading: true, error: null });
     try {
-      // TODO: replace with `await fetch('/api/users/me/subscription')`
-      await wait(FAKE_LATENCY_MS);
-      set({ status: mockSubscriptionStatus, isLoading: false });
-      return mockSubscriptionStatus;
+      const data = await api.get<SubscriptionStatus>('/api/users/me/subscription');
+      set({ status: data, isLoading: false, statusFetched: true });
+      return data;
     } catch (err) {
       const message =
         err instanceof Error ? err.message : 'Subscription status fetch failed';
-      set({ error: message, isLoading: false });
+      set({ error: message, isLoading: false, statusFetched: true });
       throw err;
     }
   },
 
   fetchBillingHistory: async () => {
-    // TODO: replace with `await fetch('/api/users/me/billing')`
-    await wait(FAKE_LATENCY_MS);
-    set({ billingHistory: mockBillingHistory });
-    return mockBillingHistory;
+    const data = await api.get<BillingHistoryItem[]>('/api/users/me/billing');
+    set({ billingHistory: data });
+    return data;
   },
 
   fetchUsageQuota: async () => {
-    // TODO: replace with `await fetch('/api/users/me/usage')`
-    await wait(FAKE_LATENCY_MS);
-    set({ usageQuota: mockUsageQuota });
-    return mockUsageQuota;
+    const data = await api.get<UsageQuota>('/api/users/me/usage');
+    set({ usageQuota: data });
+    return data;
   },
 
   submitPayment: async (payload) => {
     set({ isLoading: true, error: null });
     try {
-      // TODO: replace with `await fetch('/api/payments', { method: 'POST', body: JSON.stringify(payload) })`
-      // Dummy gateway: 1-second simulated network round-trip, no real provider call.
-      await wait(1000);
-      const current = get().status;
-      const matchedPlan =
-        get().pricingPlans.find((p) => p.id === payload.planId) ??
-        get().checkoutPlans.find((p) => p.id === payload.planId);
-      set({
-        isLoading: false,
-        status: {
-          ...current,
-          isActive: true,
-          planName: matchedPlan?.name ?? current.planName,
-          price: matchedPlan?.price ?? current.price,
-        },
-      });
-      return { success: true };
+      const res = await api.post<{
+        success: boolean;
+        subscription: SubscriptionStatus;
+      }>('/api/payments', payload);
+      set({ status: res.subscription, isLoading: false });
+      return { success: res.success };
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Payment failed';
       set({ error: message, isLoading: false });
@@ -138,12 +131,9 @@ export const useSubscriptionStore = create<SubscriptionState>((set, get) => ({
   cancelSubscription: async () => {
     set({ isLoading: true, error: null });
     try {
-      // TODO: replace with `await fetch('/api/users/me/subscription', { method: 'DELETE' })`
-      await wait(FAKE_LATENCY_MS);
-      set({
-        status: { ...mockSubscriptionStatus, isActive: false },
-        isLoading: false,
-      });
+      await api.del('/api/users/me/subscription');
+      await get().fetchSubscriptionStatus();
+      set({ isLoading: false });
     } catch (err) {
       const message =
         err instanceof Error ? err.message : 'Cancel subscription failed';
@@ -151,4 +141,16 @@ export const useSubscriptionStore = create<SubscriptionState>((set, get) => ({
       throw err;
     }
   },
+
+  reset: () => set({
+    pricingPlans: [],
+    checkoutPlans: [],
+    yearlyTogglePlans: [],
+    status: EMPTY_STATUS,
+    statusFetched: false,
+    billingHistory: [],
+    usageQuota: EMPTY_USAGE,
+    isLoading: false,
+    error: null,
+  }),
 }));

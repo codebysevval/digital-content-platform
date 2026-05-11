@@ -1,13 +1,12 @@
 import { create } from 'zustand';
 import { toast } from 'sonner';
 import type { OfflineContentItem } from '../types';
-import { OFFLINE_STORAGE_LIMIT_MB, mockOfflineContent } from '../lib/mockData';
+import { api } from '../lib/api';
 
-const FAKE_LATENCY_MS = 200;
-const wait = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
+const OFFLINE_STORAGE_LIMIT_MB = 10240;
 
 export type AddOfflineRequest = Omit<OfflineContentItem, 'downloadDate' | 'size'> & {
-  /** Optional explicit size; falls back to a category-based estimate. */
+  /** Optional explicit size; the server fills it in if omitted. */
   size?: string;
 };
 
@@ -22,6 +21,7 @@ interface OfflineState {
   deleteOfflineItem: (id: number) => Promise<void>;
   getTotalSizeMb: () => number;
   hasItem: (id: number) => boolean;
+  reset: () => void;
 }
 
 const parseSizeMb = (size: string): number => {
@@ -31,34 +31,8 @@ const parseSizeMb = (size: string): number => {
   return value;
 };
 
-const formatSizeLabel = (sizeMb: number): string =>
-  sizeMb >= 1024 ? `${(sizeMb / 1024).toFixed(1)} GB` : `${Math.round(sizeMb)} MB`;
-
-const estimateSizeMb = (category: OfflineContentItem['category']): number => {
-  switch (category) {
-    case 'courses':
-      return 600;
-    case 'podcasts':
-      return 90;
-    case 'magazines':
-      return 150;
-    case 'newspapers':
-      return 50;
-    default:
-      return 250;
-  }
-};
-
-const formatDownloadDate = (): string => {
-  const now = new Date();
-  const dd = String(now.getDate()).padStart(2, '0');
-  const mm = String(now.getMonth() + 1).padStart(2, '0');
-  const yyyy = now.getFullYear();
-  return `${dd}.${mm}.${yyyy}`;
-};
-
 export const useOfflineStore = create<OfflineState>((set, get) => ({
-  items: mockOfflineContent,
+  items: [],
   storageLimitMb: OFFLINE_STORAGE_LIMIT_MB,
   isLoading: false,
   error: null,
@@ -66,13 +40,11 @@ export const useOfflineStore = create<OfflineState>((set, get) => ({
   fetchOfflineContent: async () => {
     set({ isLoading: true, error: null });
     try {
-      // TODO: replace with `await fetch('/api/users/me/offline')`
-      await wait(FAKE_LATENCY_MS);
-      set({ items: mockOfflineContent, isLoading: false });
-      return mockOfflineContent;
+      const data = await api.get<OfflineContentItem[]>('/api/users/me/offline');
+      set({ items: data, isLoading: false });
+      return data;
     } catch (err) {
-      const message =
-        err instanceof Error ? err.message : 'Offline fetch failed';
+      const message = err instanceof Error ? err.message : 'Offline fetch failed';
       set({ error: message, isLoading: false });
       throw err;
     }
@@ -86,47 +58,41 @@ export const useOfflineStore = create<OfflineState>((set, get) => ({
       return false;
     }
 
-    const sizeMb = payload.size
-      ? parseSizeMb(payload.size)
-      : estimateSizeMb(payload.category);
-    const currentSize = items.reduce(
-      (sum, item) => sum + parseSizeMb(item.size),
-      0,
-    );
-
-    if (currentSize + sizeMb > storageLimitMb) {
-      toast.warning('Depolama limiti doldu', {
-        description: `İndirilemiyor — ${formatSizeLabel(storageLimitMb)} sınırını aşıyor.`,
-      });
-      return false;
+    // Optimistic client-side check using the explicit size hint when present,
+    // otherwise let the server enforce the limit and surface a 409.
+    if (payload.size) {
+      const sizeMb = parseSizeMb(payload.size);
+      const currentSize = items.reduce(
+        (sum, item) => sum + parseSizeMb(item.size),
+        0,
+      );
+      if (currentSize + sizeMb > storageLimitMb) {
+        toast.warning('Depolama limiti doldu');
+        return false;
+      }
     }
 
-    // TODO: replace with `await fetch('/api/users/me/offline', { method: 'POST', body: JSON.stringify(payload) })`
-    await wait(FAKE_LATENCY_MS / 2);
-
-    const newItem: OfflineContentItem = {
-      id: payload.id,
-      title: payload.title,
-      category: payload.category,
-      thumbnail: payload.thumbnail,
-      size: payload.size ?? formatSizeLabel(sizeMb),
-      downloadDate: formatDownloadDate(),
-      duration: payload.duration,
-      views: payload.views,
-      subscriberOnly: payload.subscriberOnly,
-      creator: payload.creator,
-    };
-
-    set({ items: [newItem, ...items] });
-    toast.success('İçerik çevrimdışı kullanıma hazır', {
-      description: payload.title,
-    });
-    return true;
+    try {
+      const newItem = await api.post<OfflineContentItem>(
+        '/api/users/me/offline',
+        payload,
+      );
+      set({ items: [newItem, ...get().items] });
+      toast.success('İçerik çevrimdışı kullanıma hazır', {
+        description: payload.title,
+      });
+      return true;
+    } catch (err) {
+      if (err instanceof Error && err.message.includes('409')) {
+        toast.warning('Depolama limiti doldu');
+        return false;
+      }
+      throw err;
+    }
   },
 
   deleteOfflineItem: async (id) => {
-    // TODO: replace with `await fetch(`/api/users/me/offline/${id}`, { method: 'DELETE' })`
-    await wait(FAKE_LATENCY_MS / 2);
+    await api.del(`/api/users/me/offline/${id}`);
     set({ items: get().items.filter((item) => item.id !== id) });
   },
 
@@ -134,4 +100,6 @@ export const useOfflineStore = create<OfflineState>((set, get) => ({
     get().items.reduce((sum, item) => sum + parseSizeMb(item.size), 0),
 
   hasItem: (id) => get().items.some((item) => item.id === id),
+
+  reset: () => set({ items: [], isLoading: false, error: null }),
 }));

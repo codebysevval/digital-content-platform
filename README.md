@@ -1,50 +1,122 @@
-**Abonelik Yönetim Sistemi (Digital Content Platform)**
+# SOCHEN — Dijital İçerik Platformu
 
-Bu proje, Spring Boot ve PostgreSQL kullanılarak geliştirilen bir abonelik yönetim sistemidir. Ekip olarak uyumlu çalışabilmemiz için lütfen aşağıdaki adımları takip edin.
+Türkçe dijital içerik platformu. Video kurslar, podcast'ler, e-kitaplar, dergiler ve gazeteler için içerik keşfi, abonelik yönetimi ve içerik üretici stüdyosu sunar.
 
-**🛠️ Kurulum ve Başlatma**
+## Mimari
 
-Projeyi bilgisayarınıza ilk kez çekecekseniz veya güncelleyecekseniz:
+```
+digital-content-platform/
+├── sochen-backend/      # Spring Boot 3 REST API  (Java 21 · PostgreSQL · Flyway)
+└── sochen_frontend/     # React + Vite SPA        (TypeScript · Zustand · Tailwind)
+```
 
-Projeyi Klonlayın:
+## Gereksinimler
 
-git clone https://github.com/codebysevval/digital-content-platform.git
+| Araç | Sürüm |
+|---|---|
+| JDK | 21+ |
+| Maven (ya da `./mvnw`) | 3.9+ |
+| Node.js | 20+ |
+| PostgreSQL | 14+ |
 
-Bağımlılıkları Yükleyin:
+## Hızlı Başlangıç
 
-IntelliJ IDEA'da projeyi açtığınızda sağ altta çıkan bildirimden "Load Maven Project" deyin.
+### 1. Veritabanı
 
-Eğer bağımlılıklar inmezse, sağdaki Maven sekmesine tıklayıp "Reload All Maven Projects" (döngü ikonu) butonuna basın.
+```bash
+psql -U postgres -c "CREATE USER sochen WITH PASSWORD 'sochen';"
+psql -U postgres -c "CREATE DATABASE sochen OWNER sochen;"
+```
 
-Veritabanı Ayarları:
+Docker tercih ediyorsan:
 
-src/main/resources/application.properties dosyasını açın.
+```bash
+docker run -d --name sochen-pg \
+  -e POSTGRES_USER=sochen -e POSTGRES_PASSWORD=sochen -e POSTGRES_DB=sochen \
+  -p 5432:5432 postgres:16
+```
 
-spring.datasource.username ve password kısımlarını kendi yerel PostgreSQL bilgilerinizle güncelleyin.
+### 2. Backend
 
-Uygulamayı Çalıştırın:
+```bash
+cd sochen-backend
+./mvnw spring-boot:run
+```
 
-com.example.demo paketi altındaki DemoApplication.java dosyasını bulun ve yeşil Play butonuna basın.
+İlk açılışta Flyway **V1–V16** migration'larını çalıştırır ve şemayı kurar. API `http://localhost:8080` adresinde hazır olur.
 
-🔄 GitHub Çalışma Akışı (Önemli!)
-Kod yazmaya başlamadan ve bitirdikten sonra çakışma (conflict) yaşamamak için şu sırayı izleyelim:
+### 3. Frontend
 
-1. Çalışmaya Başlamadan Önce (Pull)
-Başkası bir kod yüklediyse onu kendi bilgisayarınıza çekmek için:
+```bash
+cd sochen_frontend
+cp .env.example .env   # VITE_API_BASE_URL=http://localhost:8080
+npm install
+npm run dev
+```
 
-git pull origin main
+Tarayıcıda `http://localhost:5173` açılır.
 
-2. Değişiklikleri Kaydetme (Commit)
-Kodunuzu yazdınız ve her şeyin çalıştığından eminsiniz:
+### Demo Girişi
 
+```
+E-posta : admin@sochen.com   (veya seed'lenen admin hesabı)
+Şifre   : demo123
+Rol     : ADMIN
+```
 
+## Ortam Değişkenleri (Backend)
+
+| Değişken | Varsayılan | Açıklama |
+|---|---|---|
+| `DB_URL` | `jdbc:postgresql://localhost:5432/sochen` | JDBC bağlantı URL'si |
+| `DB_USER` | `sochen` | Veritabanı kullanıcısı |
+| `DB_PASS` | `sochen` | Veritabanı şifresi |
+| `JWT_SECRET` | `sochen-dev-secret-…` | En az 32 karakter, prod'da değiştir |
+| `UPLOAD_DIR` | `/tmp/sochen-uploads` | Medya dosyaları için disk yolu |
+
+## Kullanıcı Rolleri
+
+| Rol | Yetkiler |
+|---|---|
+| `user` | İçerik keşfi, abonelik, indirme, beğeni, takip |
+| `creator` | Yukarıdakiler + içerik yükleme/düzenleme/silme, stüdyo istatistikleri |
+| `admin` | Yukarıdakiler + moderasyon, kullanıcı yönetimi, analitik, devtools |
+
+Kullanıcılar platform içinden "İçerik Üreticisi Ol" başvurusuyla `creator` rolüne yükseltilebilir; admin onaylar.
+
+## Temel Özellikler
+
+- **İçerik Keşfi** — kategori/konu filtreleme, arama, trend + takip edilen feed
+- **Creator Studio** — medya/küçük resim/ek yükleme, içerik yayınlama, beğeni/kazanç istatistikleri, takipçi listesi
+- **Abonelik** — Aylık (₺99) ve Yıllık (₺990) planlar, ödeme akışı
+- **İndirme Kotası** — Aylık: 10, Yıllık: 20 dosya
+- **Heartbeat Gelir Motoru** — İzleme süresine göre içerik üreticisine kazanç kaydı
+- **Admin Paneli** — İçerik moderasyonu, kullanıcı yönetimi, finansal analitik, devtools
+- **Avatar Yükleme** — Dairesel kırpma + canvas resize ile profil fotoğrafı
+
+## GitHub'a Push
+
+Uzak repo zaten tanımlı (`origin`):
+
+```bash
+# Projenin kök dizininden
 git add .
-git commit -m "Ne yaptığınızı kısaca buraya yazın (Örn: User Service eklendi)"
-
-3. Kodları Gönderme (Push)
-Kendi kodunuzu göndermeden önce mutlaka tekrar bir pull yapın:
-
-git pull origin main
+git status          # .env ve node_modules görünmemeli
+git commit -m "feat: açıklayıcı commit mesajı"
 git push origin main
+```
 
-**Not:**Eğer git pull yaptığınızda bir çakışma (conflict) uyarısı alırsanız, IntelliJ içindeki "Merge" ekranından hangi kodun kalacağını seçin veya benimle iletişime geçin
+İlk kez bağlantı kuruyorsan:
+
+```bash
+git remote add origin https://github.com/KULLANICI/REPO.git
+git branch -M main
+git push -u origin main
+```
+
+> `.env`, `node_modules/`, `dist/`, `*.pgsql` dosyaları `.gitignore` tarafından zaten dışlanmıştır.
+
+## Dokümantasyon
+
+- [`sochen-backend/README.md`](sochen-backend/README.md) — API endpoint listesi, DTO kuralları, proje yapısı
+- [`sochen_frontend/README.md`](sochen_frontend/README.md) — Frontend bileşen haritası, store mimarisi

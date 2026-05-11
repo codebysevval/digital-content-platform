@@ -25,6 +25,8 @@ export interface User {
   email: string;
   avatarInitials: string;
   role: UserRole;
+  avatarUrl?: string;
+  favoriteCategory?: string;
 }
 
 export interface LoginRequest {
@@ -54,11 +56,33 @@ export interface PasswordChangeRequest {
   confirmPassword: string;
 }
 
+export interface ForgotPasswordRequest {
+  email: string;
+}
+
+export interface CreatorApplicationDTO {
+  id: number;
+  userId: number;
+  username: string;
+  rationale: string;
+  status: 'pending' | 'approved' | 'rejected';
+  createdAt: string;
+}
+
+export interface CreatorProfileUpdateRequest {
+  bio: string;
+  type: string;
+}
+
+export interface ApplicationRejectionRequest {
+  reason: string;
+}
+
 /* ------------------------------------------------------------------ */
 /*  Catalog: Content                                                   */
 /* ------------------------------------------------------------------ */
 
-export type ContentCategory = 'courses' | 'podcasts' | 'magazines' | 'newspapers';
+export type ContentCategory = 'courses' | 'podcasts' | 'magazines' | 'newspapers' | 'ebooks';
 
 export type ContentSortBy = 'newest' | 'oldest' | 'popular';
 
@@ -89,6 +113,8 @@ export interface Content {
   creator: string;
   creatorId: number;
   description: string;
+  creatorAvatarUrl?: string;
+  likeCount?: number;
 }
 
 export interface ContentModule {
@@ -113,8 +139,11 @@ export interface ContentDetailDTO {
   creator: string;
   creatorId: number;
   description: string;
+  mediaUrl?: string;
   modules?: ContentModule[];
   topics?: string[];
+  creatorAvatarUrl?: string;
+  likeCount?: number;
 }
 
 export interface ContentFilterParams {
@@ -305,6 +334,18 @@ export interface PendingContent {
   /** Display date string e.g. "18.04.2026" */
   uploadDate: string;
   thumbnail: string;
+  mediaUrl?: string | null;
+  category?: string | null;
+  subscriberOnly?: boolean;
+}
+
+export interface CreatorSearchResult {
+  id: number;
+  name: string;
+  avatar: string;
+  type: string;
+  followers: number;
+  avatarUrl?: string;
 }
 
 export interface ContentRejection {
@@ -383,6 +424,14 @@ export interface WeeklyDeliveryDay {
   deliveryCount: number;
 }
 
+export interface AdminUserItem {
+  id: number;
+  name: string;
+  email: string;
+  role: string;
+  hasSubscription: boolean;
+}
+
 /* ------------------------------------------------------------------ */
 /*  Creator Studio                                                     */
 /* ------------------------------------------------------------------ */
@@ -395,6 +444,8 @@ export interface CreatorStudioStats {
   engagementRate: string;
   /** Display string e.g. "₺8.115" */
   monthlyEarnings: string;
+  /** Display string e.g. "₺0" */
+  totalEarnings: string;
 }
 
 export interface NewContentRequest {
@@ -405,6 +456,53 @@ export interface NewContentRequest {
   topic: string;
   duration: string;
   subscriberOnly: boolean;
+  mediaUrl?: string;
+  thumbnailUrl?: string;
+  attachmentUrls?: string;
+}
+
+export interface UploadResponse {
+  uploadId: string;
+  url: string;
+  pageCount?: number | null;
+}
+
+export interface MyContentItem {
+  id: number;
+  title: string;
+  description: string;
+  thumbnail: string;
+  duration: string;
+  subscriberOnly: boolean;
+  views: number;
+  /** ISO date yyyy-MM-dd */
+  uploadDate: string;
+  /** Formatted earnings string e.g. "₺0,00" — null when not available */
+  earnings?: string | null;
+  topic?: string | null;
+  category?: string | null;
+  likeCount?: number | null;
+}
+
+export interface ContentUpdatePayload {
+  title: string;
+  description: string;
+  thumbnailUrl?: string;
+  topic?: string;
+  category?: string;
+}
+
+export interface EarningsHistoryEntry {
+  month: string;
+  amount: number;
+}
+
+export interface CreatorFollower {
+  userId: number;
+  name: string;
+  avatarUrl?: string;
+  avatarInitials: string;
+  followedAt: string;
 }
 
 /* ------------------------------------------------------------------ */

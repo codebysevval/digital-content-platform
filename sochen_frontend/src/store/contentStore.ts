@@ -1,30 +1,22 @@
 import { create } from 'zustand';
 import type {
   Content,
-  ContentCategory,
   ContentDetailDTO,
   ContentFilterParams,
-  ContentSortBy,
   ContentTypeOption,
   LikedContentItem,
   RelatedContent,
   Topic,
 } from '../types';
-import {
-  mockAllContent,
-  mockContentDetails,
-  mockContentTypes,
-  mockLikedContent,
-  mockTopics,
-} from '../lib/mockData';
-
-const FAKE_LATENCY_MS = 200;
-const wait = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
+import { api } from '../lib/api';
 
 interface ContentState {
   topics: Topic[];
   contentTypes: ContentTypeOption[];
   catalog: Content[];
+  trendingFeed: Content[];
+  recommendedFeed: Content[];
+  followingFeed: Content[];
   isLoading: boolean;
   error: string | null;
 
@@ -41,73 +33,31 @@ interface ContentState {
   filterContent: (params: ContentFilterParams) => Promise<Content[]>;
   toggleLike: (id: number) => Promise<void>;
   isLiked: (id: number) => boolean;
+  fetchTrendingFeed: () => Promise<Content[]>;
+  fetchRecommendedFeed: (category?: string) => Promise<Content[]>;
+  fetchFollowingFeed: () => Promise<Content[]>;
+  reset: () => void;
 }
 
-const filterAndSort = (
-  catalog: Content[],
-  params: ContentFilterParams,
-): Content[] => {
-  const {
-    category = 'all',
-    topic = 'all',
-    searchQuery = '',
-    showSubscriberOnly = false,
-    showFreeContent = true,
-    selectedContentTypes = ['podcasts', 'magazines', 'newspapers', 'courses'],
-    sortBy = 'newest',
-  } = params;
-
-  const byCategory =
-    category === 'all'
-      ? catalog
-      : catalog.filter((item) => item.category === category);
-
-  const filtered = byCategory.filter((item) => {
-    const matchesTopic = topic === 'all' || item.topic === topic;
-    const matchesSearch = item.title
-      .toLowerCase()
-      .includes(searchQuery.toLowerCase());
-    const matchesAccessFilter =
-      (showSubscriberOnly && item.subscriberOnly) ||
-      (showFreeContent && !item.subscriberOnly) ||
-      (!showSubscriberOnly && !showFreeContent);
-    const matchesContentType =
-      selectedContentTypes.length === 0 ||
-      selectedContentTypes.includes(item.category as ContentCategory);
-    return matchesTopic && matchesSearch && matchesAccessFilter && matchesContentType;
-  });
-
-  return [...filtered].sort((a, b) => {
-    switch (sortBy as ContentSortBy) {
-      case 'newest':
-        return new Date(b.uploadDate).getTime() - new Date(a.uploadDate).getTime();
-      case 'oldest':
-        return new Date(a.uploadDate).getTime() - new Date(b.uploadDate).getTime();
-      case 'popular':
-        return b.views - a.views;
-      default:
-        return 0;
-    }
-  });
-};
-
 export const useContentStore = create<ContentState>((set, get) => ({
-  topics: mockTopics,
-  contentTypes: mockContentTypes,
-  catalog: mockAllContent,
-  contentDetails: mockContentDetails,
+  topics: [],
+  contentTypes: [],
+  catalog: [],
+  trendingFeed: [],
+  recommendedFeed: [],
+  followingFeed: [],
+  contentDetails: {},
   likedContentIds: [],
-  likedContentList: mockLikedContent,
+  likedContentList: [],
   isLoading: false,
   error: null,
 
   fetchCatalog: async () => {
     set({ isLoading: true, error: null });
     try {
-      // TODO: replace with `await fetch('/api/content')`
-      await wait(FAKE_LATENCY_MS);
-      set({ catalog: mockAllContent, isLoading: false });
-      return mockAllContent;
+      const data = await api.get<Content[]>('/api/content');
+      set({ catalog: data, isLoading: false });
+      return data;
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Catalog fetch failed';
       set({ error: message, isLoading: false });
@@ -116,25 +66,25 @@ export const useContentStore = create<ContentState>((set, get) => ({
   },
 
   fetchTopics: async () => {
-    // TODO: replace with `await fetch('/api/content/topics')`
-    await wait(FAKE_LATENCY_MS);
-    set({ topics: mockTopics });
-    return mockTopics;
+    const data = await api.get<Topic[]>('/api/content/topics');
+    set({ topics: data });
+    return data;
   },
 
   fetchContentTypes: async () => {
-    // TODO: replace with `await fetch('/api/content/types')`
-    await wait(FAKE_LATENCY_MS);
-    set({ contentTypes: mockContentTypes });
-    return mockContentTypes;
+    const data = await api.get<ContentTypeOption[]>('/api/content/types');
+    set({ contentTypes: data });
+    return data;
   },
 
   fetchContentById: async (id) => {
     set({ isLoading: true, error: null });
     try {
-      // TODO: replace with `await fetch(`/api/content/${id}`)`
-      await wait(FAKE_LATENCY_MS);
-      const detail = mockContentDetails[id] ?? mockContentDetails[1] ?? null;
+      // The catch swallows 404s so the UI can render an empty/not-found state
+      // without surfacing a generic error toast.
+      const detail = await api
+        .get<ContentDetailDTO>(`/api/content/${id}`)
+        .catch(() => null);
       set({ isLoading: false });
       return detail;
     } catch (err) {
@@ -145,30 +95,15 @@ export const useContentStore = create<ContentState>((set, get) => ({
   },
 
   fetchRelatedContent: async (id) => {
-    // TODO: replace with `await fetch(`/api/content/${id}/related`)`
-    await wait(FAKE_LATENCY_MS);
-    const detail = get().contentDetails[id];
-    const targetCategory = detail?.category;
-    const candidates = get()
-      .catalog.filter((c) => c.id !== id)
-      .slice(0, 3)
-      .map<RelatedContent>((c) => ({
-        id: c.id,
-        title: c.title,
-        thumbnail: c.thumbnail,
-        duration: c.duration,
-      }));
-    void targetCategory;
-    return candidates;
+    return api.get<RelatedContent[]>(`/api/content/${id}/related`);
   },
 
   fetchLikedContent: async () => {
     set({ isLoading: true, error: null });
     try {
-      // TODO: replace with `await fetch('/api/users/me/likes')`
-      await wait(FAKE_LATENCY_MS);
-      set({ likedContentList: mockLikedContent, isLoading: false });
-      return mockLikedContent;
+      const data = await api.get<LikedContentItem[]>('/api/users/me/likes');
+      set({ likedContentList: data, isLoading: false });
+      return data;
     } catch (err) {
       const message =
         err instanceof Error ? err.message : 'Liked content fetch failed';
@@ -178,20 +113,80 @@ export const useContentStore = create<ContentState>((set, get) => ({
   },
 
   filterContent: async (params) => {
-    // TODO: replace with `await fetch('/api/content/search?...')`
-    await wait(FAKE_LATENCY_MS / 4);
-    return filterAndSort(get().catalog, params);
+    const query = new URLSearchParams();
+    if (params.category && params.category !== 'all') {
+      query.set('category', params.category);
+    }
+    if (params.topic && params.topic !== 'all') {
+      query.set('topic', params.topic);
+    }
+    if (params.searchQuery) {
+      query.set('searchQuery', params.searchQuery);
+    }
+    if (params.showSubscriberOnly) {
+      query.set('showSubscriberOnly', 'true');
+    }
+    if (params.showFreeContent === false) {
+      query.set('showFreeContent', 'false');
+    }
+    if (params.selectedContentTypes?.length) {
+      query.set('selectedContentTypes', params.selectedContentTypes.join(','));
+    }
+    if (params.sortBy) {
+      query.set('sortBy', params.sortBy);
+    }
+    return api.get<Content[]>(`/api/content/search?${query.toString()}`);
   },
 
   toggleLike: async (id) => {
-    // TODO: replace with `await fetch(`/api/content/${id}/like`, { method: 'POST' })`
-    await wait(FAKE_LATENCY_MS / 4);
+    const res = await api.post<{ liked: boolean }>(`/api/content/${id}/like`);
     const current = get().likedContentIds;
-    const next = current.includes(id)
-      ? current.filter((i) => i !== id)
-      : [...current, id];
-    set({ likedContentIds: next });
+    set({
+      likedContentIds: res.liked
+        ? [...current, id]
+        : current.filter((i) => i !== id),
+    });
   },
 
   isLiked: (id) => get().likedContentIds.includes(id),
+
+  fetchTrendingFeed: async () => {
+    const data = await api.get<Content[]>('/api/content/trending');
+    set({ trendingFeed: data });
+    return data;
+  },
+
+  fetchRecommendedFeed: async (category) => {
+    const url = category
+      ? `/api/content/recommended?category=${encodeURIComponent(category)}`
+      : '/api/content/recommended';
+    const data = await api.get<Content[]>(url);
+    set({ recommendedFeed: data });
+    return data;
+  },
+
+  fetchFollowingFeed: async () => {
+    try {
+      const data = await api.get<Content[]>('/api/content/following-feed');
+      set({ followingFeed: data });
+      return data;
+    } catch {
+      set({ followingFeed: [] });
+      return [];
+    }
+  },
+
+  reset: () => set({
+    topics: [],
+    contentTypes: [],
+    catalog: [],
+    trendingFeed: [],
+    recommendedFeed: [],
+    followingFeed: [],
+    contentDetails: {},
+    likedContentIds: [],
+    likedContentList: [],
+    isLoading: false,
+    error: null,
+  }),
 }));

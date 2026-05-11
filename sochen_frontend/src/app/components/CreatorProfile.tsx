@@ -10,18 +10,21 @@ import {
   Calendar,
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { useCreatorStore } from '../../store';
-import { formatUploadDate } from '../../lib/formatters';
+import { useAuthStore, useCreatorStore } from '../../store';
+import { formatUploadDate, getAvatarInitials } from '../../lib/formatters';
+import { resolveMediaUrl } from '../../lib/api';
 import type { Creator, CreatorContent as CreatorContentDTO } from '../../types';
 
 interface CreatorProfileProps {
   creatorId: number;
   onContentClick?: (contentId: number) => void;
+  isOwnProfile?: boolean;
 }
 
 export function CreatorProfile({
   creatorId,
   onContentClick,
+  isOwnProfile = false,
 }: CreatorProfileProps) {
   const fetchCreatorById = useCreatorStore((s) => s.fetchCreatorById);
   const fetchCreatorContent = useCreatorStore((s) => s.fetchCreatorContent);
@@ -31,6 +34,8 @@ export function CreatorProfile({
   const isNotified = useCreatorStore((s) => s.isNotified);
   const followingStatus = useCreatorStore((s) => s.followingStatus);
   const notificationStatus = useCreatorStore((s) => s.notificationStatus);
+  const creatorFromStore = useCreatorStore((s) => s.creators[creatorId]);
+  const sessionUserId = useAuthStore((s) => s.user?.id);
 
   const [creator, setCreator] = useState<Creator | null>(null);
   const [creatorContent, setCreatorContent] = useState<CreatorContentDTO[]>([]);
@@ -53,7 +58,7 @@ export function CreatorProfile({
     return () => {
       cancelled = true;
     };
-  }, [creatorId, fetchCreatorById, fetchCreatorContent]);
+  }, [creatorId, sessionUserId, fetchCreatorById, fetchCreatorContent]);
 
   if (status === 'loading') {
     return (
@@ -74,6 +79,8 @@ export function CreatorProfile({
   const following = isFollowing(creator.id) || !!followingStatus[creator.id];
   const notificationsOn =
     isNotified(creator.id) || !!notificationStatus[creator.id];
+  const followerCount =
+    creatorFromStore?.followers ?? creator.followers;
 
   return (
     <div className="min-h-full bg-[#0F172A] overflow-auto">
@@ -82,8 +89,16 @@ export function CreatorProfile({
           <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/10 via-transparent to-blue-500/10 pointer-events-none"></div>
 
           <div className="relative flex items-start gap-6">
-            <div className="w-32 h-32 rounded-full bg-gradient-to-r from-indigo-500 to-blue-500 flex items-center justify-center text-white text-4xl font-bold">
-              {creator.avatar}
+            <div className="w-32 h-32 rounded-full bg-gradient-to-r from-indigo-500 to-blue-500 flex items-center justify-center text-white text-4xl font-bold overflow-hidden">
+              {creator.avatar && (creator.avatar.startsWith('/') || creator.avatar.startsWith('http')) ? (
+                <img
+                  src={resolveMediaUrl(creator.avatar)}
+                  alt={creator.name}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                getAvatarInitials(creator.name, creator.avatar)
+              )}
             </div>
 
             <div className="flex-1">
@@ -96,42 +111,49 @@ export function CreatorProfile({
                   <p className="text-gray-300 max-w-2xl">{creator.bio}</p>
                 </div>
 
-                <div className="flex gap-3">
-                  <button
-                    onClick={() => void toggleFollow(creator.id)}
-                    className={`flex items-center gap-2 px-6 py-3 rounded-lg font-semibold transition-all ${
-                      following
-                        ? 'bg-gray-700 text-white hover:bg-gray-600'
-                        : 'bg-gradient-to-r from-indigo-500 to-blue-500 text-white hover:shadow-lg'
-                    }`}
-                  >
-                    {following ? (
-                      <>
-                        <CheckCircle size={20} />
-                        Takip Ediliyor
-                      </>
-                    ) : (
-                      <>
-                        <Users size={20} />
-                        Takip Et
-                      </>
-                    )}
-                  </button>
+                {!isOwnProfile && (
+                  <div className="flex gap-3">
+                    <button
+                      onClick={() => void toggleFollow(creator.id)}
+                      className={`flex items-center gap-2 px-6 py-3 rounded-lg font-semibold transition-all ${
+                        following
+                          ? 'bg-gray-700 text-white hover:bg-gray-600'
+                          : 'bg-gradient-to-r from-indigo-500 to-blue-500 text-white hover:shadow-lg'
+                      }`}
+                    >
+                      {following ? (
+                        <>
+                          <CheckCircle size={20} />
+                          Takip Ediliyor
+                        </>
+                      ) : (
+                        <>
+                          <Users size={20} />
+                          Takip Et
+                        </>
+                      )}
+                    </button>
 
-                  <button
-                    onClick={() => void toggleNotifications(creator.id)}
-                    className={`p-3 rounded-lg transition-all ${
-                      notificationsOn
-                        ? 'bg-indigo-600 text-white'
-                        : 'bg-gray-700 text-gray-400'
-                    }`}
-                  >
-                    <Bell
-                      size={20}
-                      fill={notificationsOn ? 'currentColor' : 'none'}
-                    />
-                  </button>
-                </div>
+                    <button
+                      onClick={() => void toggleNotifications(creator.id)}
+                      className={`p-3 rounded-lg transition-all ${
+                        notificationsOn
+                          ? 'bg-indigo-600 text-white'
+                          : 'bg-gray-700 text-gray-400'
+                      }`}
+                    >
+                      <Bell
+                        size={20}
+                        fill={notificationsOn ? 'currentColor' : 'none'}
+                      />
+                    </button>
+                  </div>
+                )}
+                {isOwnProfile && (
+                  <span className="px-4 py-2 rounded-lg bg-indigo-600/20 text-indigo-400 text-sm font-medium border border-indigo-500/30">
+                    Profilim
+                  </span>
+                )}
               </div>
 
               <div className="grid grid-cols-3 gap-6 mt-6">
@@ -141,7 +163,7 @@ export function CreatorProfile({
                     <span className="text-sm">Takipçi</span>
                   </div>
                   <p className="text-2xl font-bold text-white">
-                    {creator.followers.toLocaleString('tr-TR')}
+                    {followerCount.toLocaleString('tr-TR')}
                   </p>
                 </div>
 
@@ -161,7 +183,7 @@ export function CreatorProfile({
                     <span className="text-sm">Toplam Görüntülenme</span>
                   </div>
                   <p className="text-2xl font-bold text-white">
-                    {(creator.totalViews / 1000).toFixed(0)}K
+                    {creator.totalViews >= 1000 ? `${(creator.totalViews / 1000).toFixed(0)}K` : creator.totalViews.toLocaleString('tr-TR')}
                   </p>
                 </div>
               </div>
@@ -185,7 +207,7 @@ export function CreatorProfile({
               >
                 <div className="relative aspect-video overflow-hidden">
                   <img
-                    src={item.thumbnail}
+                    src={resolveMediaUrl(item.thumbnail) ?? ''}
                     alt={item.title}
                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
                   />

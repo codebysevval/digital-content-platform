@@ -15,6 +15,7 @@ import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { useSubscriptionStore } from '../../store';
 import type { PlanIconKey } from '../../types';
+import { AlertTriangle } from 'lucide-react';
 
 const PLAN_ICON_MAP: Record<PlanIconKey, LucideIcon> = {
   zap: Zap,
@@ -35,6 +36,8 @@ export function PricingCheckout({ onSuccess }: PricingCheckoutProps = {}) {
   const plans = useSubscriptionStore((s) => s.pricingPlans);
   const fetchPricingPlans = useSubscriptionStore((s) => s.fetchPricingPlans);
   const submitPayment = useSubscriptionStore((s) => s.submitPayment);
+  const currentStatus = useSubscriptionStore((s) => s.status);
+  const fetchSubscriptionStatus = useSubscriptionStore((s) => s.fetchSubscriptionStatus);
   const isPaying = useSubscriptionStore((s) => s.isLoading);
 
   const [step, setStep] = useState<'pricing' | 'checkout'>('pricing');
@@ -47,12 +50,23 @@ export function PricingCheckout({ onSuccess }: PricingCheckoutProps = {}) {
 
   useEffect(() => {
     void fetchPricingPlans();
-  }, [fetchPricingPlans]);
+    void fetchSubscriptionStatus();
+  }, [fetchPricingPlans, fetchSubscriptionStatus]);
 
   const selectedPlanData =
     plans.find((p) => p.id === selectedPlan) ?? plans[1] ?? plans[0];
 
-  const handlePlanSelect = (planId: string) => {
+  const isCurrentPlan = (planName: string) =>
+    currentStatus.isActive &&
+    currentStatus.planName.toLowerCase() === planName.toLowerCase();
+
+  const handlePlanSelect = (planId: string, planName: string) => {
+    if (isCurrentPlan(planName)) {
+      toast.warning('Bu plana zaten abonesiniz', {
+        description: 'Farklı bir plan seçerek yükseltme yapabilirsiniz.',
+      });
+      return;
+    }
     setSelectedPlan(planId);
     setStep('checkout');
   };
@@ -169,16 +183,23 @@ export function PricingCheckout({ onSuccess }: PricingCheckoutProps = {}) {
                       )}
                     </div>
 
+                    {isCurrentPlan(plan.name) && (
+                      <div className="flex items-center gap-2 mb-3 px-3 py-2 rounded-lg bg-yellow-500/10 border border-yellow-500/30 text-yellow-400 text-xs font-medium">
+                        <AlertTriangle size={14} />
+                        Mevcut planınız
+                      </div>
+                    )}
                     <button
-                      onClick={() => handlePlanSelect(plan.id)}
-                      className={`w-full py-3 px-6 rounded-lg font-semibold flex items-center justify-center gap-2 transition-all ${
+                      onClick={() => handlePlanSelect(plan.id, plan.name)}
+                      disabled={isCurrentPlan(plan.name)}
+                      className={`w-full py-3 px-6 rounded-lg font-semibold flex items-center justify-center gap-2 transition-all disabled:opacity-60 disabled:cursor-not-allowed ${
                         plan.isFree
                           ? 'bg-gray-600 text-white hover:bg-gray-700 shadow-md hover:shadow-lg'
                           : 'bg-gradient-to-r from-indigo-600 to-blue-600 text-white hover:shadow-lg hover:shadow-indigo-500/50'
                       }`}
                     >
-                      {plan.isFree ? 'Ücretsiz Başla' : 'Planı Seç'}
-                      <ArrowRight size={18} />
+                      {isCurrentPlan(plan.name) ? 'Aktif Plan' : plan.isFree ? 'Ücretsiz Başla' : 'Planı Seç'}
+                      {!isCurrentPlan(plan.name) && <ArrowRight size={18} />}
                     </button>
 
                     <div className="mt-8 space-y-3">
