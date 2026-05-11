@@ -1,0 +1,41 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: sochen-backend
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/sochen}
+    username: ${DB_USER:sochen}
+    password: ${DB_PASS:sochen}
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: true
+        jdbc:
+          time_zone: Europe/Istanbul
+  flyway:
+    enabled: true
+  servlet:
+    multipart:
+      max-file-size: 500MB
+      max-request-size: 500MB
+
+jwt:
+  secret: ${JWT_SECRET:sochen-dev-secret-key-change-in-production-min-32-chars}
+  expiration-ms: 86400000
+
+# Default: project-local ./data/uploads (relative to JVM working directory — run
+# backend from sochen-backend/ so files live next to the repo). Not /tmp.
+# Production / another machine: set UPLOAD_DIR to an absolute path (and copy that
+# folder with your DB backup when you migrate).
+upload:
+  dir: ${UPLOAD_DIR:./data/uploads}
+
+logging:
+  level:
+    com.sochen: DEBUG
+    org.springframework.security: DEBUG

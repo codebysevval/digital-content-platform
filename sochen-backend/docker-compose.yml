@@ -1,0 +1,12 @@
+# Optional: dedicated PostgreSQL for SOCHEN when you don’t want to create
+# roles on the host. If port 5432 is already taken, change the left side only,
+# e.g. "5433:5432", then set DB_URL=jdbc:postgresql://localhost:5433/sochen
+services:
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: sochen
+      POSTGRES_PASSWORD: sochen
+      POSTGRES_DB: sochen
+    ports:
+      - "5432:5432"
